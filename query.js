@@ -23,7 +23,7 @@ export class Query {
         this.setState(STATES.UNCHANGED, instance);
     }
     findById(id) {
-
+        //TODO: specify everything this method needs to do
     }
 
 }

@@ -17,18 +17,18 @@ export class Tracking {
         else {
             if (!this.IsInTracking(entry))
                 throw new Error('Entry is not yet in the tracking')
-            changeAllEntriesWithId(this.Id(entry), entry.state);
+            changeAllEntriesWithId(this.id(entry), entry.state);
         }
         this.entries.push(entry);
     }
     isInTracking(entry) {
         this.entries.some(_entry => {
-            return this.haveSameId(this.Id(entry), this.Id(_entry));
+            return this.haveSameId(this.id(entry), this.id(_entry));
         });
     }
     changeAllEntriesWithId(id, state) {
         this.entries = this.entries.map(entry => {
-            entry.state = isSameId(id, this.Id(entry)) ? state : entry.state;
+            entry.state = isSameId(id, this.id(entry)) ? state : entry.state;
         });
     }
     isSameId(id1, id2) {
@@ -41,7 +41,7 @@ export class Tracking {
         });
         return result;
     }
-    Id(entry) {
+    id(entry) {
         return entry.entity.id;
     }
 }
