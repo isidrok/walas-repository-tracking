@@ -1,5 +1,4 @@
-import { states } from './utils/symbol';
-import { canAdd, canUpdate, canDelete, canUnchanged, isInDB } from './utils/helpertracking';
+import { STATES } from './states';
 export class Tracking {
     constructor() {
         this.entries = [];
@@ -8,55 +7,38 @@ export class Tracking {
         return this.entries;
     }
     addEntry(entry) {
-        let lastEntry = getEntryById(getId(entry))
-        let lastState = lastEntry ? lastEntry.state : undefined;
-        let adders = {
-            [states.add]: pushAddEntry,
-            [states.update]: pushUpdateEntry,
-            [states.delete]: pushDeleteEntry,
-            [states.unchanged]: pushUnchangedEntry,
-            'notFound': function () { throw new Error('Wrong state'); }
-        };
-        return adders[entry.state](entry, lastState) || adders['notFound']();
+        if (entry.state === STATES.ADD) {
+            if (this.isInTracking(entry))
+                throw new Error('Entry is already in the tracking');
+        }
+        else {
+            if (!this.IsInTracking(entry))
+                throw new Error('Entry is not yet in the tracking')
+            changeAllEntriesWithId(this.Id(entry), entry.state);
+        }
+        this.entries.push(entry);
     }
-    pushAddEntry(entry, lastState) {
-        if (!canAdd(entry, lastState))
-            throw new Error(`This entity cannot be added`);
-        pushEntry(entry);
+    isInTracking(entry) {
+        this.entries.some(_entry => {
+            return this.haveSameId(this.Id(entry), this.Id(_entry));
+        });
     }
-    pushUpdateEntry(entry, lastState) {
-        if (!canUpdate(entry, lastState))
-            throw new Error(`This entity cannot be updated`);
-        pushEntry(entry);
+    changeAllEntriesWithId(id, state) {
+        this.entries = this.entries.map(entry => {
+            entry.state = isSameId(id, this.Id(entry)) ? state : entry.state;
+        });
     }
-    pushDeleteEntry(entry, lastState) {
-        if (!canDelete(entry, lastState))
-            throw new Error(`This entity cannot be deleted`);
-        removeAllEntriesWithId(getId(entry));
-        if (isInDB(entry)) pushEntry(entry);
-    }
-    pushUnchangedEntry(entry, lastState) {
-        if (!canUnchanged(entry, lastState))
-            throw new Error(`This entity cannot be set to unchanged`);
-        removeAllEntriesWithId(getId(entry));
-        pushEntry(entry);
-    }
-    getEntryById(id) {
-        let result = null;
-        this.entries.forEach(entry => {
-            if (getId(entry) === id) result = entry;
+    isSameId(id1, id2) {
+        let keys1 = Object.keys(id1);
+        let keys2 = Object.keys(id2);
+        let result = true;
+        if (keys1.length != keys2.length) return false;
+        keys1.forEach(key => {
+            if (!id2[key] || (id2[key] != id1[key])) result = false;
         });
         return result;
     }
-    removeAllEntriesWithId(id) {
-        this.entries.filter(entry => {
-            return getId(entry) != id;
-        });
-    }
-    getId(entry) {
+    Id(entry) {
         return entry.entity.id;
-    }
-    pushEntry(entry) {
-        this.entries.push(entry);
     }
 }
