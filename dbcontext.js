@@ -12,6 +12,7 @@ class DbContext {
     }
     saveChanges() {
         //launch tracking agains the DB
+        this.tracking.initialize();
     }
 }
 

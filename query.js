@@ -4,17 +4,17 @@ export class Query {
         this._entity = entity;
         this._setState = setState;
     }
-    add(entity) {
-        this.setState(STATES.ADD, entity);
+    add(instance) {
+        this.setState(STATES.ADD, instance);
     }
-    update(entity) {
-        this.setState(STATES.UPDATE, entity);
+    update(instance) {
+        this.setState(STATES.UPDATE, instance);
     }
-    delete(entity) {
-        this.setState(STATES.DELETE, entity);
+    delete(instance) {
+        this.setState(STATES.DELETE, instance);
     }
-    setUnchanged(entity) {
-        this.setState(STATES.UNCHANGED, entity);
+    setUnchanged(instance) {
+        this.setState(STATES.UNCHANGED, instance);
     }
     findById(id) {
 

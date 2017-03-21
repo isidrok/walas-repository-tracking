@@ -1,10 +1,14 @@
 import { STATES } from './states';
 export class Tracking {
     constructor() {
-        this.entries = [];
+        this.entries = null;
+        initialize();
     }
     get entries() {
         return this.entries;
+    }
+    initialize(){
+        this.entries = [];
     }
     addEntry(entry) {
         if (entry.state === STATES.ADD) {
