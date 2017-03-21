@@ -1,13 +1,12 @@
 import { STATES } from './states';
 export class Tracking {
     constructor() {
-        this.entries = null;
-        initialize();
+        this.entries = [];
     }
     get entries() {
         return this.entries;
     }
-    initialize(){
+    reset(){
         this.entries = [];
     }
     addEntry(entry) {
@@ -38,7 +37,7 @@ export class Tracking {
         let result = true;
         if (keys1.length != keys2.length) return false;
         keys1.forEach(key => {
-            if (!id2[key] || (id2[key] != id1[key])) result = false;
+            if (id2[key] != id1[key]) result = false;
         });
         return result;
     }
