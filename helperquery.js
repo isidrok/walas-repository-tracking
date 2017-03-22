@@ -3,7 +3,7 @@ export function validadeQueryParams(entity, setState) {
         throw new Error(`Invalid Query arguments`);
 }
 
-export function validateInstance(instance) {
+export function validateInstance(instance, entity) {
     if (!instance || instance.constructor.name !== entity.name)
         throw new Error(`Invalid instance`);
 }
