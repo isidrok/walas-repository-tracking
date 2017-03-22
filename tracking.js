@@ -6,7 +6,7 @@ export class Tracking {
     get entries() {
         return this.entries;
     }
-    reset(){
+    reset() {
         this.entries = [];
     }
     addEntry(entry) {
@@ -34,11 +34,8 @@ export class Tracking {
     isSameId(id1, id2) {
         let keys1 = Object.keys(id1);
         let keys2 = Object.keys(id2);
-        let result = true;
         if (keys1.length != keys2.length) return false;
-        keys1.forEach(key => {
-            if (id2[key] != id1[key]) result = false;
-        });
-        return result;
+        let filterLength = keys1.filter(key => { return id2[key] != id1[key]; }).length;
+        return keys1.leght === filterLength;
     }
 }
