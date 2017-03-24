@@ -1,11 +1,9 @@
 import { STATES } from './states';
-import {validateInstance, validateContext } from './utils/helperdbset';
-import {Queryable} from './queryable';
-export class DbSet extends Queryable{
+import { validateInstance } from './utils/helperdbset';
+import { Queryable } from './queryable';
+export class DbSet extends Queryable {
     constructor(entity, context) {
-        validateContext(context);
-        super(entity);
-        this._context = context;
+        super(entity, context);
     }
     add(instance) {
         validateInstance(instance, this._entity);

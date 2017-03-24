@@ -1,7 +1,10 @@
-import { invalidConstructors } from './invalidconstructors';
-
 export function validateEntity(entity) {
-    if (!entity || invalidConstructors.indexOf(entity.constructor.name) > -1)
+    if (!entity)
         throw new Error('Invalid Entity');
+    //TODO: i18n
+}
+export function validateContext(context) {
+    if (!context)
+        throw new Error('Invalid Context');
     //TODO: i18n
 }
