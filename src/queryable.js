@@ -4,19 +4,27 @@ export class Queryable{
         validateEntity(entity);
         validateContext(context);
         this._entity = entity;
-        this._context = context;
+        this._context = context;        
+        this._expression ={};
+        this._provider = null; //TODO:resolve provider
 
     }
-    select(){
+    select(projection){        
+        this._expression.select = projection.toString();
         return this;
     }
-    where(){
+    where(predicate){
+        this._expression.where = predicate;
         return this;
     }
     order(){
         return this;
     }
-    provider(){
+    get provider(){
         //TODO
+        return this._provider;
+    }
+    get expression(){
+       return this._expression;
     }
 }

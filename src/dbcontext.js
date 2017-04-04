@@ -1,18 +1,21 @@
-import { Tracking } from './tracking';
+import { StateManager } from './statemanager';
 import { Query } from './query';
 import { STATES } from './states';
 
 class DbContext {
     constructor() {
-        this._tracking = new Tracking();
+        this._stateManager = new StateManager();
+        this._conventions = [];
+        configuration(this._conventions);
     }
     setState(entity, state) {
-        this._tracking.addEntry({ entity: entity, state: state })
+        this._stateManager.addEntry({ entity: entity, state: state })
     }
     saveChanges() {
         //TODO: implement UOW
-        this._tracking.reset();
+        this._stateManager.reset();
     }
+    configuration() { }
 }
 
 

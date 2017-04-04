@@ -16,6 +16,9 @@ class MyDbContext extends DbContext {
     get Foo() {
         return new DbSet(Foo, this);
     }
+    configuration(){
+        
+    }
 }
 
 let context = new MyDbContext();

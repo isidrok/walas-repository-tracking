@@ -1,5 +1,5 @@
 import { STATES } from './states';
-export class Tracking {
+export class StateManager {
     constructor() {
         this._entries = [];
     }
@@ -10,13 +10,13 @@ export class Tracking {
         this._entries = [];
     }
     addEntry(entry) {
-        if (entry.state === STATES.ADD && this._isInTracking(entry))
+        if (entry.state === STATES.ADD && this._isInEntries(entry))
             this._changeEntriesWithId(entry);
         else if (entry.state !== STATES.ADD)
             this._changeEntriesStateWithId(entry.entity.id, entry.state);
         this._entries.push(entry);
     }
-    _isInTracking(thisEntry) {
+    _isInEntries(thisEntry) {
         this._entries.some(entry => {
             return this._haveSameId(thisEntry.entity.id, entry.entity.id);
         });
