@@ -6,15 +6,16 @@ export class VisitorSelect extends VisitorBase {
     ArrowFunctionExpression(node) {
         this.visit(this, node.body);
     }
-    ArrayExpression(node) {
-        node.elements.forEach(c => this.visit(this, c));
-    }
     ObjectExpression(node) {
         node.prefix = this._provider.nextPrefix();
-        node.properties.forEach(c => {
+        //if firstPrefix --> resolveFrom
+       node.properties.forEach(c => {
             c.prefix = node.prefix;
             this.visit(this, c);
         });
+    }
+    ArrayExpression(node) {
+        node.elements.forEach(c => this.visit(this, c));
     }
     ObjectProperty(node) {
         //let meta= getmeta() this.check(meta)
@@ -27,6 +28,11 @@ export class VisitorSelect extends VisitorBase {
         this._provider.grammar.select.push({ prefix: node.prefix, field: node.name });    
     }
     resolveFrom(node){
+        /*
+        take the prefix of the firt object expression and build
+        {from: entity.meta.table, prefix: prefix}
+        then set grammar.from to that
+        */
 
     }
     resolveJoin(node){
