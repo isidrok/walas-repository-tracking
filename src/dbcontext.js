@@ -1,13 +1,13 @@
 import { StateManager } from './statemanager';
-import { Query } from './query';
-import { STATES } from './states';
+import { getMetaEntities } from 'walas-meta-api';
 
-class DbContext {
+export class DbContext {
     constructor() {
         this._stateManager = new StateManager();
         this._conventions = [];
-        configuration(this._conventions);
+        this.metaEntities = getMetaEntities(DbContext);
     }
+
     setState(entity, state) {
         this._stateManager.addEntry({ entity: entity, state: state })
     }
@@ -15,7 +15,11 @@ class DbContext {
         //TODO: implement UOW
         this._stateManager.reset();
     }
-    configuration() { }
+    config() {
+        this.metaEntities.forEach(entity => {
+            this._conventions.map(convention => new convention(entity.entity, entity.meta).exec());
+        });
+    }
 }
 
 

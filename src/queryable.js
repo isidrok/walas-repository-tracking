@@ -1,13 +1,17 @@
-import { validateEntity, validateContext } from './utils/helperqueryable';
+import {ProviderSql} from './providersql';
 export class Queryable {
     constructor(entity, context) {
-        validateEntity(entity);
-        validateContext(context);
         this._entity = entity;
         this._context = context;
         this._expression = { order: [] };
-        this._provider = null; //TODO:resolve provider
+        this._provider = new ProviderSql();
 
+    }
+    get provider() {
+        return this._provider;
+    }
+    get expression() {
+        return this._expression;
     }
     select(projection) {
         this._expression.select = projection;
@@ -33,11 +37,8 @@ export class Queryable {
         this.expression.order.push({ expression: selector, type: 'desc' });
         return this;
     }
-    get provider() {
-        //TODO
-        return this._provider;
+    exec(){
+        this.provider.exec(this._expression, this._entity, this._context);
     }
-    get expression() {
-        return this._expression;
-    }
+
 }
