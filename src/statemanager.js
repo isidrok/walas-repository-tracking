@@ -28,7 +28,7 @@ export class StateManager {
     }
     _changeEntriesWithId(newEntry) {
         this._entries = this._entries.map(entry => {
-            entry = this._isSameId(newEntry.entity.id, _entry.entity.id) ? entrnewEntryy : entry;
+            entry = this._isSameId(newEntry.entity.id, entry.entity.id) ? newEntry : entry;
         });
     }
     _isSameId(id1, id2) {

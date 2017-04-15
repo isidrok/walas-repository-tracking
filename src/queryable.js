@@ -22,20 +22,23 @@ export class Queryable {
         return this;
     }
     orderBy(selector) {
-        this.expression.order.push({ expression: selector, type: 'asc' });
+       this._order(selector,'asc');
         return this;
     }
     orderByDescending(selector) {
-        this.expression.order.push({ expression: selector, type: 'desc' });
+       this._order(selector,'desc');
         return this;
     }
     thenBy(selector) {
-        this.expression.order.push({ expression: selector, type: 'asc' });
+       this._order(selector,'asc');
         return this;
     }
     thenByDescending(selector) {
-        this.expression.order.push({ expression: selector, type: 'desc' });
+       this._order(selector,'desc');
         return this;
+    }
+    _order(expression, type){
+        this.expression.order.push({expression:expression, type:type});
     }
     exec(){
         this.provider.exec(this._expression, this._entity, this._context);
