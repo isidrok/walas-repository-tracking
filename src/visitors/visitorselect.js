@@ -53,25 +53,35 @@ export class VisitorSelect extends VisitorBase {
     }
     _buildJoin(node) {
         //{type:'left',table:'bar',prefix:'b', provider:'google',on:["id","id"],join:[]
-        let obj = {
-            prefix: node.prefix,
-            table: node.key.name, //look in the metaentities for the name and extract table name from meta
-            required: true, //look in the meta of entity, then search for the property pointed by table and see if its required
-            relation: 'hasOne', //look in the meta of entity, then search for the property pointed by table and see the type or relation
-            provider: 'google', //look again for the meta of the property that creates the relaation with table and extract the provider
-            on: ['id', 'id'],// some kind of convention??
-            join: []
-        }
-        let joins = this._provider.grammar.join; //maybe its easier to store the pointers of every join and subjoin so we dont need
-        //any kind of distinction
-
-        //do a recursive search to see if this entity is already inside a join array inside of one of the joins of the
-        //different entities and the same for its parent if the above does not work
-        let imInside = joins.filter(c => c.prefix === node.prefix)[0];
+        let joins = {};
+        this._getAllJoins(this._provider.grammar.join, joins);
+        let imInside = joins[node.prefix];
         if (!imInside) {
-            let myParentIsInside = joins.filter(c => c.prefix === node.parent.prefix)[0];
-            let destination = myParentIsInside || this._provider.grammar;
-            destination.join.push(obj);
+            let obj = {
+                prefix: node.prefix,
+                table: node.key.name, //look in the metaentities for the name and extract table name from meta
+                required: true, //look in the meta of entity, then search for the property pointed by table and see if its required
+                relation: 'hasOne', //look in the meta of entity, then search for the property pointed by table and see the type or relation
+                provider: 'google', //look again for the meta of the property that creates the relaation with table and extract the provider
+                on: ['id', 'id'],// some kind of convention??
+                join: []
+            }
+            let myParentIsInside = joins[node.parent.prefix];
+            let destination = myParentIsInside || this._provider.grammar.join;
+            destination.push(obj);
         }
     }
+    /**
+     * Searches recursively for all the join arrays in the grammar so we can manage them easily
+     * @param {Array} join 
+     * @param {Object} obj 
+     */
+    _getAllJoins(join, obj) {
+        join.reduce((pre, cur) => {
+            pre[cur.prefix] = cur.join;
+            this._getAllJoins(cur.join, obj);
+            return pre;
+        }, obj);
+    }
 }
+
