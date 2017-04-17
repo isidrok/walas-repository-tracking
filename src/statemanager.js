@@ -18,7 +18,7 @@ export class StateManager {
   }
   _isInEntries(thisEntry) {
     this._entries.some(entry => {
-      return this._haveSameId(thisEntry.entity.id, entry.entity.id);
+      return this._isSameId(thisEntry.entity.id, entry.entity.id);
     });
   }
   _changeEntriesStateWithId(id, state) {

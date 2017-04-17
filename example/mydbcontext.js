@@ -1,10 +1,14 @@
-import { DbContext, DbSet } from '../src';
+import { Bar } from './bar';
+import { Baz } from './baz';
+import { Foo } from './foo';
+import { DbContext, DbSet } from '../dist';
 export class MyDbContext extends DbContext {
   constructor() {
     super();
+    this._foo = new DbSet(Foo, this);
   }
   get Foo() {
-    return new DbSet(Foo, this);
+    return this._foo;
   }
   get Bar() {
     return new DbSet(Bar, this);

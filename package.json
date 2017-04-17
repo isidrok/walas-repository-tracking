@@ -4,7 +4,8 @@
   "description": "",
   "main": "example.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src -d dist && babel example -d build"
   },
   "repository": {
     "type": "git",
@@ -19,10 +20,14 @@
   "dependencies": {
     "babel-plugin-linq": "git+https://github.com/isidrok/babel-plugin-linq.git",
     "babylon": "^6.16.1",
-    "walas-meta-api": "git+https://github.com/isidrok/walas-meta-api.git"
+    "walas-meta-api": "git+https://github.com/isidrok/walas-meta-api.git",
+    "walas-decorators": "git+https://github.com/isidrok/walas-decorators.git"
   },
   "devDependencies": {
+    "babel-cli": "^6.24.1",
     "babel-eslint": "^7.2.2",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-preset-es2015": "^6.24.1",
     "eslint": "^3.19.0",
     "eslint-config-google": "^0.7.1"
   }

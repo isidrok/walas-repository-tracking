@@ -1,4 +1,7 @@
 import { Baz } from './baz';
+import { Entity, HasMany } from 'walas-decorators';
+
+@Entity({ table: 'BAR', provider: 'MongoDB' })
 export class Bar {
   constructor(id, description, phone, bazs) {
     this._id = id;
@@ -15,6 +18,7 @@ export class Bar {
   get phone() {
     return this._phone;
   }
+  @HasMany(Baz)
   get bazs() {
     return this._bazs;
   }

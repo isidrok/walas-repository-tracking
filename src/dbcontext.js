@@ -5,9 +5,10 @@ export class DbContext {
   constructor() {
     this._stateManager = new StateManager();
     this._conventions = [];
-    this.metaEntities = getMetaEntities(DbContext);
   }
-
+  get metaEntities() {
+    return getMetaEntities(DbContext);
+  }
   setState(entity, state) {
     this._stateManager.addEntry({
       entity: entity,

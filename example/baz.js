@@ -1,3 +1,6 @@
+import { Entity } from 'walas-decorators';
+
+@Entity({ table: 'BAZ', provider: 'GoogleCloud' })
 export class Baz {
   constructor(id, description, phone) {
     this._id = id;

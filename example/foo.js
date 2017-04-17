@@ -1,4 +1,7 @@
 import { Bar } from './bar';
+import { HasOne, Entity, Required } from 'walas-decorators';
+
+@Entity({ table: 'FOO', provider: 'MySQL' })
 export class Foo {
   constructor(id, description, phone, bar) {
     this._id = id;
@@ -15,6 +18,8 @@ export class Foo {
   get phone() {
     return this._phone;
   }
+  @Required()
+  @HasOne(Bar)
   get bar() {
     return this._bar;
   }
