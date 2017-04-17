@@ -1,24 +1,27 @@
-import { DbContext, DbSet } from './src'
+import { DbContext, DbSet } from './src';
 class Foo {
-    constructor(id, phone) {
-        this._id = id;
-        this._phone = phone;
-    }
-    get id() { return this._id; }
-    set phone(phone) { this._phone = phone; }
-    get phone() { return this._phone; }
+  constructor(id, phone) {
+    this._id = id;
+    this._phone = phone;
+  }
+  get id() {
+    return this._id;
+  }
+  set phone(phone) {
+    this._phone = phone;
+  }
+  get phone() {
+    return this._phone;
+  }
 }
 
 class MyDbContext extends DbContext {
-    constructor() {
-        super();
-    }
-    get Foo() {
-        return new DbSet(Foo, this);
-    }
-    configuration(){
-        
-    }
+  constructor() {
+    super();
+  }
+  get Foo() {
+    return new DbSet(Foo, this);
+  }
 }
 
 let context = new MyDbContext();

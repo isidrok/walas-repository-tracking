@@ -1,0 +1,16 @@
+export class Baz {
+  constructor(id, description, phone) {
+    this._id = id;
+    this._description = description;
+    this._phone = phone;
+  }
+  get id() {
+    return this._id;
+  }
+  get description() {
+    return this._description;
+  }
+  get phone() {
+    return this._phone;
+  }
+}

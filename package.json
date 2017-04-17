@@ -20,5 +20,10 @@
     "babel-plugin-linq": "git+https://github.com/isidrok/babel-plugin-linq.git",
     "babylon": "^6.16.1",
     "walas-meta-api": "git+https://github.com/isidrok/walas-meta-api.git"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.2",
+    "eslint": "^3.19.0",
+    "eslint-config-google": "^0.7.1"
   }
 }
