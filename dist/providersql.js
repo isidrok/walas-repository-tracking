@@ -45,8 +45,10 @@ var ProviderSql = exports.ProviderSql = function () {
         var select = new _visitors.VisitorSelect(expression.select, entity, context, this);
         select.exec();
       }
-      // let where = new VisitorWhere(expression.where, entity, context, this);
-      // where.exec();
+      if (expression.where) {
+        var where = new _visitors.VisitorWhere(expression.where, entity, context, this);
+        where.exec();
+      }
       expression.order.map(function (order) {
         return new _visitors.VisitorOrder(order, entity, context, _this).exec();
       });

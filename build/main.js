@@ -21,7 +21,6 @@ context.Bar.add(bar);
 context.Baz.add(baz1);
 context.Baz.add(baz2);
 
-context.Foo.select('(c=>({id,description,Bar:{id,description}}))').orderBy('(c=>c.id)').thenByDescending('(c=>c.Bar.description)').thenBy('(c=>c.Bar.Baz.description)');
-context.Foo.exec();
+context.Foo.select('(c=>({id,description,Bar:{id,description}}))').where('(c=>(c.id === p0 || c.id === p1 && c.description === p2))').orderBy('(c=>c.id)').thenByDescending('(c=>c.Bar.description)').thenBy('(c=>c.Bar.Baz.description)').exec();
 
 console.log(context);

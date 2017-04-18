@@ -25,8 +25,10 @@ export class ProviderSql {
       let select = new VisitorSelect(expression.select, entity, context, this);
       select.exec();
     }
-    // let where = new VisitorWhere(expression.where, entity, context, this);
-    // where.exec();
+    if (expression.where) {
+      let where = new VisitorWhere(expression.where, entity, context, this);
+      where.exec();
+    }
     expression.order.map(order =>
       new VisitorOrder(order, entity, context, this).exec());
   }

@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.VisitorWhere = undefined;
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _visitorbase = require('./visitorbase');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -21,6 +23,48 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
 
     return _possibleConstructorReturn(this, (VisitorWhere.__proto__ || Object.getPrototypeOf(VisitorWhere)).call(this, expression, entity, context, provider));
   }
+
+  _createClass(VisitorWhere, [{
+    key: 'visit',
+    value: function visit(node, expression, type) {
+      var visitor = this[node.type];
+      visitor.call(this, node, expression, type);
+    }
+  }, {
+    key: 'ArrowFunctionExpression',
+    value: function ArrowFunctionExpression(node) {
+      this.visit(node.body);
+    }
+  }, {
+    key: 'LogicalExpression',
+    value: function LogicalExpression(node) {
+      var lhs = node.left;
+      var rhs = node.right;
+      var expression = [];
+      this.visit(lhs, expression, 'left');
+      this.visit(rhs, expression, 'right');
+      expression.splice(1, 0, node.operator);
+      this._provider.grammar.where = expression.concat(this._provider.grammar.where);
+    }
+  }, {
+    key: 'BinaryExpression',
+    value: function BinaryExpression(node, expression, position) {
+      var lhs = node.left;
+      var rhs = node.right;
+      var obj = {};
+      if (lhs.type === 'Identifier') {
+        obj.field = rhs.property.name;
+        obj.operator = node.operator;
+        obj.param = '@' + lhs.name;
+      } else {
+        obj.field = lhs.property.name;
+        obj.operator = node.operator;
+        obj.param = '@' + rhs.name;
+      }
+      // obj.prefix = ??;
+      position === 'left' ? expression.unshift(obj) : expression.push(obj);
+    }
+  }]);
 
   return VisitorWhere;
 }(_visitorbase.VisitorBase);
