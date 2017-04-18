@@ -9,6 +9,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _babylon = require('babylon');
 
+var _walasMetaApi = require('walas-meta-api');
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var VisitorBase = exports.VisitorBase = function () {
@@ -17,7 +19,7 @@ var VisitorBase = exports.VisitorBase = function () {
 
     this._ast = (0, _babylon.parse)(expression);
     this._entity = entity;
-    this._context = context;
+    this._metaEntities = (0, _walasMetaApi.getMetaEntities)(context.constructor);
     this._provider = provider;
   }
 
@@ -60,19 +62,47 @@ var VisitorBase = exports.VisitorBase = function () {
       this._getAllJoins(this._provider.grammar.join, joins);
       var imInside = joins[node.prefix];
       if (!imInside) {
+        var myParentIsInside = joins[node.parent.prefix];
+        var entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
+        var meta = this._getMeta(node.key.name);
+        var property = this._getProperty(entityMeta, node.key.name);
         var obj = {
           prefix: node.prefix,
-          table: node.key.name, // look in the metaentities for the name and extract table name from meta
-          required: true, // look in the meta of entity, then search for the property pointed by table and see if its required
-          relation: 'hasOne', // look in the meta of entity, then search for the property pointed by table and see the type or relation
-          provider: 'google', // look again for the meta of the property that creates the relaation with table and extract the provider
+          table: meta.class.entity.table,
+          required: property.required,
+          relation: property.hasOne ? 'hasOne' : 'hasMany',
+          provider: property.provider || meta.class.entity.provider,
           on: ['id', 'id'], // some kind of convention??
           join: []
         };
-        var myParentIsInside = joins[node.parent.prefix];
+
         var destination = myParentIsInside || this._provider.grammar.join;
         destination.push(obj);
       }
+    }
+  }, {
+    key: '_getMeta',
+    value: function _getMeta(entityName) {
+      var entity = this._metaEntities.filter(function (c) {
+        return c.entity.name === entityName;
+      })[0];
+      return entity.meta;
+    }
+  }, {
+    key: '_getProperty',
+    value: function _getProperty(meta, entityName) {
+      var props = meta.properties;
+      var property = Object.keys(props).filter(function (key) {
+        var relation = props[key].hasMany || props[key].hasOne;
+        return relation.name === entityName;
+      })[0];
+      return props[property];
+    }
+  }, {
+    key: '_getParentName',
+    value: function _getParentName(node) {
+      var name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;
+      return name;
     }
     /**
      * Searches recursively for all the join arrays in the grammar and stores

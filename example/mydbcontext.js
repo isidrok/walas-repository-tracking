@@ -2,6 +2,7 @@ import { Bar } from './bar';
 import { Baz } from './baz';
 import { Foo } from './foo';
 import { DbContext, DbSet } from '../dist';
+import { getMetaEntities } from 'walas-meta-api';
 export class MyDbContext extends DbContext {
   constructor() {
     super();

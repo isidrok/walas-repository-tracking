@@ -19,6 +19,7 @@ var DbContext = exports.DbContext = function () {
 
     this._stateManager = new _statemanager.StateManager();
     this._conventions = [];
+    // this._metaEntities = getMetaEntities(DbContext)
   }
 
   _createClass(DbContext, [{
@@ -45,11 +46,6 @@ var DbContext = exports.DbContext = function () {
           return new Convention(entity.entity, entity.meta).exec();
         });
       });
-    }
-  }, {
-    key: 'metaEntities',
-    get: function get() {
-      return (0, _walasMetaApi.getMetaEntities)(DbContext);
     }
   }]);
 

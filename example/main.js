@@ -2,6 +2,7 @@ import { Bar } from './bar';
 import { Baz } from './baz';
 import { Foo } from './foo';
 import { MyDbContext } from './mydbcontext';
+import {getMetaEntities} from 'walas-meta-api';
 
 let context = new MyDbContext();
 let baz1 = new Baz(3, 'baz1', 333);
@@ -14,8 +15,7 @@ context.Bar.add(bar);
 context.Baz.add(baz1);
 context.Baz.add(baz2);
 
-context.Foo.select('(c=>({id,description,bar:{id,description,baz:[{phone,id}]}}))');
-console.log(context.Foo._expression.select);
+context.Foo.select('(c=>({id,description,Bar:{id,description,Baz:[{phone,id}]}}))');
 context.Foo.exec();
 
 console.log(context);

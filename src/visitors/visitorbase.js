@@ -1,9 +1,10 @@
 import { parse } from 'babylon';
+import { getMetaEntities } from 'walas-meta-api';
 export class VisitorBase {
   constructor(expression, entity, context, provider) {
     this._ast = parse(expression);
     this._entity = entity;
-    this._context = context;
+    this._metaEntities = getMetaEntities(context.constructor);
     this._provider = provider;
   }
   File(node) {
@@ -31,19 +32,41 @@ export class VisitorBase {
     this._getAllJoins(this._provider.grammar.join, joins);
     let imInside = joins[node.prefix];
     if (!imInside) {
+      let myParentIsInside = joins[node.parent.prefix];
+      let entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
+      let meta = this._getMeta(node.key.name);
+      let property = this._getProperty(entityMeta, node.key.name);
       let obj = {
         prefix: node.prefix,
-        table: node.key.name, // look in the metaentities for the name and extract table name from meta
-        required: true, // look in the meta of entity, then search for the property pointed by table and see if its required
-        relation: 'hasOne', // look in the meta of entity, then search for the property pointed by table and see the type or relation
-        provider: 'google', // look again for the meta of the property that creates the relaation with table and extract the provider
+        table: meta.class.entity.table,
+        required: property.required,
+        relation: property.hasOne ? 'hasOne' : 'hasMany',
+        provider: property.provider || meta.class.entity.provider,
         on: ['id', 'id'], // some kind of convention??
         join: [],
       };
-      let myParentIsInside = joins[node.parent.prefix];
+
       let destination = myParentIsInside || this._provider.grammar.join;
       destination.push(obj);
     }
+  }
+  _getMeta(entityName) {
+    let entity = (this._metaEntities).filter(c => {
+      return c.entity.name === entityName;
+    })[0];
+    return entity.meta;
+  }
+  _getProperty(meta, entityName) {
+    let props = meta.properties;
+    let property = Object.keys(props).filter(key => {
+      let relation = props[key].hasMany || props[key].hasOne;
+      return relation.name === entityName;
+    })[0];
+    return props[property];
+  }
+  _getParentName(node) {
+    let name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;
+    return name;
   }
   /**
    * Searches recursively for all the join arrays in the grammar and stores
