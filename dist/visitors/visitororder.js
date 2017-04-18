@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.VisitorOrder = undefined;
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _visitorbase = require('./visitorbase');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -16,11 +18,50 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
   _inherits(VisitorOrder, _VisitorBase);
 
-  function VisitorOrder(expression, entity, context, provider) {
+  function VisitorOrder(order, entity, context, provider) {
     _classCallCheck(this, VisitorOrder);
 
-    return _possibleConstructorReturn(this, (VisitorOrder.__proto__ || Object.getPrototypeOf(VisitorOrder)).call(this, expression, entity, context, provider));
+    var _this = _possibleConstructorReturn(this, (VisitorOrder.__proto__ || Object.getPrototypeOf(VisitorOrder)).call(this, order.expression, entity, context, provider));
+
+    _this._type = order.type;
+    return _this;
   }
+
+  _createClass(VisitorOrder, [{
+    key: 'ArrowFunctionExpression',
+    value: function ArrowFunctionExpression(node) {
+      node.body.prefix = this._provider.nextPrefix();
+      node.body.property.build = true;
+      if (node.body.object.type === 'Identifier') node.body.property.parent = node.body;
+      this.visit(node.body);
+    }
+  }, {
+    key: 'MemberExpression',
+    value: function MemberExpression(node) {
+      if (node.object.type === 'MemberExpression') {
+        node.property.parent = node.object.property;
+        this.visit(node.object);
+      }
+      this.visit(node.property);
+    }
+  }, {
+    key: 'Identifier',
+    value: function Identifier(node) {
+      node.prefix = this._provider.nextPrefix();
+      if (node.build) this._buildOrder(node);else this._buildJoin(node);
+    }
+  }, {
+    key: '_buildOrder',
+    value: function _buildOrder(node) {
+      var order = {
+        prefix: node.parent.prefix,
+        field: node.name,
+        type: this._type,
+        parent: node.parent
+      };
+      this._provider.grammar.order.push(order);
+    }
+  }]);
 
   return VisitorOrder;
 }(_visitorbase.VisitorBase);

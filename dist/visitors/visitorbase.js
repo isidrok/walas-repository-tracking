@@ -21,6 +21,7 @@ var VisitorBase = exports.VisitorBase = function () {
     this._entity = entity;
     this._metaEntities = (0, _walasMetaApi.getMetaEntities)(context.constructor);
     this._provider = provider;
+    this._provider.resetPrefix();
   }
 
   _createClass(VisitorBase, [{
@@ -62,10 +63,11 @@ var VisitorBase = exports.VisitorBase = function () {
       this._getAllJoins(this._provider.grammar.join, joins);
       var imInside = joins[node.prefix];
       if (!imInside) {
-        var myParentIsInside = joins[node.parent.prefix];
+        var name = node.type !== 'Identifier' ? node.key.name : node.name;
+        var myParentIsInside = node.parent ? joins[node.parent.prefix] : undefined;
         var entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
-        var meta = this._getMeta(node.key.name);
-        var property = this._getProperty(entityMeta, node.key.name);
+        var meta = this._getMeta(name);
+        var property = this._getProperty(entityMeta, name);
         var obj = {
           prefix: node.prefix,
           table: meta.class.entity.table,
@@ -79,6 +81,13 @@ var VisitorBase = exports.VisitorBase = function () {
         var destination = myParentIsInside || this._provider.grammar.join;
         destination.push(obj);
       }
+    }
+  }, {
+    key: '_getParentName',
+    value: function _getParentName(node) {
+      var name = void 0;
+      if (node.type !== 'Identifier') name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;else name = node.parent.name;
+      return name;
     }
   }, {
     key: '_getMeta',
@@ -97,12 +106,6 @@ var VisitorBase = exports.VisitorBase = function () {
         return relation.name === entityName;
       })[0];
       return props[property];
-    }
-  }, {
-    key: '_getParentName',
-    value: function _getParentName(node) {
-      var name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;
-      return name;
     }
     /**
      * Searches recursively for all the join arrays in the grammar and stores

@@ -21,7 +21,7 @@ context.Bar.add(bar);
 context.Baz.add(baz1);
 context.Baz.add(baz2);
 
-context.Foo.select('(c=>({id,description,Bar:{id,description,Baz:[{phone,id}]}}))');
+context.Foo.select('(c=>({id,description,Bar:{id,description}}))').orderBy('(c=>c.id)').thenByDescending('(c=>c.Bar.description)').thenBy('(c=>c.Bar.Baz.description)');
 context.Foo.exec();
 
 console.log(context);

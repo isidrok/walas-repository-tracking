@@ -27,6 +27,11 @@ var ProviderSql = exports.ProviderSql = function () {
   }
 
   _createClass(ProviderSql, [{
+    key: 'resetPrefix',
+    value: function resetPrefix() {
+      this._counter = 0;
+    }
+  }, {
     key: 'nextPrefix',
     value: function nextPrefix() {
       return this._prefixes[this._counter++];
@@ -34,12 +39,17 @@ var ProviderSql = exports.ProviderSql = function () {
   }, {
     key: 'exec',
     value: function exec(expression, entity, context) {
-      var select = new _visitors.VisitorSelect(expression.select, entity, context, this);
-      select.exec();
+      var _this = this;
+
+      if (expression.select) {
+        var select = new _visitors.VisitorSelect(expression.select, entity, context, this);
+        select.exec();
+      }
       // let where = new VisitorWhere(expression.where, entity, context, this);
       // where.exec();
-      // expression.order.map(order =>
-      //   new VisitorOrder(order, entity, context, this).exec());
+      expression.order.map(function (order) {
+        return new _visitors.VisitorOrder(order, entity, context, _this).exec();
+      });
     }
   }, {
     key: 'grammar',

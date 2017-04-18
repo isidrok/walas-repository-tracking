@@ -6,6 +6,7 @@ export class VisitorBase {
     this._entity = entity;
     this._metaEntities = getMetaEntities(context.constructor);
     this._provider = provider;
+    this._provider.resetPrefix();
   }
   File(node) {
     this.visit(node.program);
@@ -32,10 +33,11 @@ export class VisitorBase {
     this._getAllJoins(this._provider.grammar.join, joins);
     let imInside = joins[node.prefix];
     if (!imInside) {
-      let myParentIsInside = joins[node.parent.prefix];
+      let name = node.type !== 'Identifier' ? node.key.name : node.name;
+      let myParentIsInside = node.parent ? joins[node.parent.prefix] : undefined;
       let entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
-      let meta = this._getMeta(node.key.name);
-      let property = this._getProperty(entityMeta, node.key.name);
+      let meta = this._getMeta(name);
+      let property = this._getProperty(entityMeta, name);
       let obj = {
         prefix: node.prefix,
         table: meta.class.entity.table,
@@ -50,6 +52,13 @@ export class VisitorBase {
       destination.push(obj);
     }
   }
+  _getParentName(node) {
+    let name;
+    if (node.type !== 'Identifier')
+      name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;
+    else name = node.parent.name;
+    return name;
+  }
   _getMeta(entityName) {
     let entity = (this._metaEntities).filter(c => {
       return c.entity.name === entityName;
@@ -63,10 +72,6 @@ export class VisitorBase {
       return relation.name === entityName;
     })[0];
     return props[property];
-  }
-  _getParentName(node) {
-    let name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;
-    return name;
   }
   /**
    * Searches recursively for all the join arrays in the grammar and stores

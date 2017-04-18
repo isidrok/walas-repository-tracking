@@ -14,16 +14,20 @@ export class ProviderSql {
   get grammar() {
     return this._grammar;
   }
-
+  resetPrefix() {
+    this._counter = 0;
+  }
   nextPrefix() {
     return this._prefixes[this._counter++];
   }
   exec(expression, entity, context) {
-    let select = new VisitorSelect(expression.select, entity, context, this);
-    select.exec();
+    if (expression.select) {
+      let select = new VisitorSelect(expression.select, entity, context, this);
+      select.exec();
+    }
     // let where = new VisitorWhere(expression.where, entity, context, this);
     // where.exec();
-    // expression.order.map(order =>
-    //   new VisitorOrder(order, entity, context, this).exec());
+    expression.order.map(order =>
+      new VisitorOrder(order, entity, context, this).exec());
   }
 }
