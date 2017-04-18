@@ -86,8 +86,9 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
   }, {
     key: '_buildFrom',
     value: function _buildFrom(firstPrefix) {
-      var table = this._entity.name; // this._entity.meta.class.entity.table
-      var provider = 'amazon'; // this._entity.meta.class.entity.provider
+      var meta = this._getMeta(this._entity.name);
+      var table = meta.class.entity.table;
+      var provider = meta.class.entity.provider;
       this._provider.grammar.from = {
         from: table,
         prefix: firstPrefix,

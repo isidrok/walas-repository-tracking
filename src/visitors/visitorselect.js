@@ -49,8 +49,9 @@ export class VisitorSelect extends VisitorBase {
     });
   }
   _buildFrom(firstPrefix) {
-    let table = this._entity.name; // this._entity.meta.class.entity.table
-    let provider = 'amazon'; // this._entity.meta.class.entity.provider
+    let meta = this._getMeta(this._entity.name);
+    let table = meta.class.entity.table;
+    let provider = meta.class.entity.provider;
     this._provider.grammar.from = {
       from: table,
       prefix: firstPrefix,
