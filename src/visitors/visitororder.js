@@ -28,7 +28,6 @@ export class VisitorOrder extends VisitorBase {
       prefix: node.parent.prefix,
       field: node.name,
       type: this._type,
-      parent: node.parent
     };
     this._provider.grammar.order.push(order);
   }

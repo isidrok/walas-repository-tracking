@@ -56,8 +56,7 @@ var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
       var order = {
         prefix: node.parent.prefix,
         field: node.name,
-        type: this._type,
-        parent: node.parent
+        type: this._type
       };
       this._provider.grammar.order.push(order);
     }

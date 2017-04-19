@@ -8,8 +8,6 @@ var _foo = require('./foo');
 
 var _mydbcontext = require('./mydbcontext');
 
-var _walasMetaApi = require('walas-meta-api');
-
 var context = new _mydbcontext.MyDbContext();
 var baz1 = new _baz.Baz(3, 'baz1', 333);
 var baz2 = new _baz.Baz(4, 'baz2', 444);
@@ -21,6 +19,9 @@ context.Bar.add(bar);
 context.Baz.add(baz1);
 context.Baz.add(baz2);
 
-context.Foo.select('(c=>({id,description,Bar:{id,description}}))').where('(c=>(c.id === p0 || c.id === p1 && c.description === p2))').orderBy('(c=>c.id)').thenByDescending('(c=>c.Bar.description)').thenBy('(c=>c.Bar.Baz.description)').exec();
+context.Foo.select('(c=>({id,description,Bar:{id,description}}))').where('(c=>(c.id === p0 || c.Bar.id === p1 && c.Bar.Baz.description !== p2))').orderBy('(c=>c.id)')
+// .thenByDescending('(c=>c.Bar.description)')
+// .thenBy('(c=>c.Bar.Baz.description)')
+.exec();
 
 console.log(context);

@@ -2,7 +2,6 @@ import { Bar } from './bar';
 import { Baz } from './baz';
 import { Foo } from './foo';
 import { MyDbContext } from './mydbcontext';
-import { getMetaEntities } from 'walas-meta-api';
 
 let context = new MyDbContext();
 let baz1 = new Baz(3, 'baz1', 333);
@@ -17,10 +16,10 @@ context.Baz.add(baz2);
 
 context.Foo
   .select('(c=>({id,description,Bar:{id,description}}))')
-  .where('(c=>(c.id === p0 || c.id === p1 && c.description === p2))')
+  .where('(c=>(c.id === p0 || c.Bar.id === p1 && c.Bar.Baz.description !== p2))')
   .orderBy('(c=>c.id)')
-  .thenByDescending('(c=>c.Bar.description)')
-  .thenBy('(c=>c.Bar.Baz.description)')
+  // .thenByDescending('(c=>c.Bar.description)')
+  // .thenBy('(c=>c.Bar.Baz.description)')
   .exec();
 
 console.log(context);
