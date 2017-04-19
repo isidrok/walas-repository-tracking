@@ -19,7 +19,10 @@ context.Bar.add(bar);
 context.Baz.add(baz1);
 context.Baz.add(baz2);
 
-context.Foo.select('(c=>({id,description,Bar:{id,description}}))').where('(c=>(c.id === p0 || c.Bar.id === p1 && c.Bar.Baz.description !== p2))').orderBy('(c=>c.id)')
+context.Foo
+// .select('(c=>({id,description,Bar:{id,description}}))')
+.where('(c=>(c.id === p0 || p1 === c.Bar.id && c.Bar.Baz.description !== p2))')
+// .orderBy('(c=>c.id)')
 // .thenByDescending('(c=>c.Bar.description)')
 // .thenBy('(c=>c.Bar.Baz.description)')
 .exec();

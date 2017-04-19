@@ -20,37 +20,27 @@ export class VisitorWhere extends VisitorBase {
     this._provider.grammar.where = expression.concat(this._provider.grammar.where);
   }
   BinaryExpression(node, expression, position) {
-    this._provider.resetPrefix();
-    node.prefix = this._provider.nextPrefix();
-    let lhs = node.left;
-    let rhs = node.right;
+    let attr = node.left.type === 'Identifier' ? node.right: node.left;
+    let param = node.left.type === 'Identifier' ? node.left : node.right;
     let obj = {};
     let createJoin = true;
-    if (lhs.type === 'Identifier') {
-      if (rhs.object.type === 'Identifier') {
-        rhs.object.prefix = node.prefix;
-        rhs.property.parent = rhs.object;
-        createJoin = false;
-      }
-      obj.field = rhs.property.name;
-      obj.operator = node.operator;
-      obj.param = '@' + lhs.name;
-      this.visit(rhs);
-      obj.prefix = rhs.property.parent.prefix;
-      if (createJoin) this._buildJoin(rhs.property.parent);
-    } else {
-      if (lhs.object.type === 'Identifier') {
-        lhs.object.prefix = node.prefix;
-        lhs.property.parent = lhs.object;
-        createJoin = false;
-      }
-      obj.field = lhs.property.name;
-      obj.operator = node.operator;
-      obj.param = '@' + rhs.name;
-      this.visit(lhs);
-      obj.prefix = lhs.property.parent.prefix;
-      if (createJoin) this._buildJoin(lhs.property.parent);
+
+    this._provider.resetPrefix();
+    node.prefix = this._provider.nextPrefix();
+
+    if (attr.object.type === 'Identifier') {
+      attr.object.prefix = node.prefix;
+      attr.property.parent = attr.object;
+      createJoin = false;
     }
+
+    this.visit(attr);
+    obj.prefix = attr.property.parent.prefix;
+    obj.field = attr.property.name;
+    obj.operator = node.operator;
+    obj.param = '@' + param.name;
+
+    if (createJoin) this._buildJoin(attr.property.parent);
     position === 'left' ? expression.unshift(obj) : expression.push(obj);
   }
   MemberExpression(node) {
