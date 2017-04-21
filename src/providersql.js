@@ -1,6 +1,7 @@
 import { VisitorOrder, VisitorSelect, VisitorWhere } from './visitors';
 export class ProviderSql {
   constructor() {
+    // TODO change prefix for fixedPrefix + counter
     this._prefixes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
     this._counter = 0;
     this._grammar = {
