@@ -14,13 +14,29 @@ export class VisitorWhere extends VisitorBase {
     let lhs = node.left;
     let rhs = node.right;
     let expression = [];
+    if (node.extra && node.extra.parenthesized) {
+      let left = lhs;
+      while (left.left) {
+        left.parenthesis = left.parenthesis || [];
+        left.parenthesis.push('(');
+        left = left.left;
+      }
+      let right = rhs;
+      while (right.right) {
+        right.parenthesis = right.parenthesis || [];
+        right.parenthesis.push(')');
+        right = right.right;
+      }
+    }
+
     this.visit(lhs, expression, 'left');
     this.visit(rhs, expression, 'right');
-    expression.splice(1, 0, node.operator);
-    this._provider.grammar.where = expression.concat(this._provider.grammar.where);
+
+    expression.length === 2 ? expression.splice(1, 0, node.operator) : expression.unshift(node.operator);
+    this._provider.grammar.where = this._provider.grammar.where.concat(expression);
   }
   BinaryExpression(node, expression, position) {
-    let attr = node.left.type === 'Identifier' ? node.right: node.left;
+    let attr = node.left.type === 'Identifier' ? node.right : node.left;
     let param = node.left.type === 'Identifier' ? node.left : node.right;
     let obj = {};
     let createJoin = true;
@@ -39,6 +55,7 @@ export class VisitorWhere extends VisitorBase {
     obj.field = attr.property.name;
     obj.operator = node.operator;
     obj.param = '@' + param.name;
+    obj.parenthesis = node.parenthesis;
 
     if (createJoin) this._buildJoin(attr.property.parent);
     position === 'left' ? expression.unshift(obj) : expression.push(obj);
