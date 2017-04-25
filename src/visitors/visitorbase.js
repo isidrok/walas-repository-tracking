@@ -38,9 +38,9 @@ export class VisitorBase {
     // or in case the node has a parent, inside its parent join array.
     let path = node.path.split('.');
     let pathToParent = path.slice(0, path.length - 1).join('.');
-    let parentHasJoin = pathToParent ? joins[this._provider.getPrefix(pathToParent)] : undefined;
+    let parentJoin = pathToParent ? joins[this._provider.getPrefix(pathToParent)] : undefined;
 
-    // TODO: if !parentHasJoin build parent join before continuing with the child join
+    // TODO: if !parentJoin build parent join before continuing with the child join
 
     // here we get the name of the property that creates the relation,
     // and then find in which metadata is the information about the property stored,
@@ -49,7 +49,7 @@ export class VisitorBase {
     // and its class name).
     // From the class name we finally get the table name and the provider.
     let propertyName = node.type !== 'Identifier' ? node.key.name : node.name;
-    let entityMeta = parentHasJoin ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
+    let entityMeta = parentJoin ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
     let meta = this._getMeta(name);
     let property = this._getProperty(entityMeta, name);
 
@@ -64,7 +64,7 @@ export class VisitorBase {
       on: ['id', 'id'], // some kind of convention??
       join: [],
     };
-    let destination = myParentIsInside || this._provider.grammar.join;
+    let destination = parentJoin || this._provider.grammar.join;
     destination.push(obj);
   }
   _getParentName(node) {
