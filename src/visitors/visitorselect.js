@@ -9,7 +9,9 @@ export class VisitorSelect extends VisitorBase {
     belong to the main entity, so this is the moment to build the
     from statement, in addition, this ensures that the from is not build
     more than once since only one arrow function expression will be processed.*/
-    let meta = this._getMeta(this._entity.name);
+    let meta = this._metaEntities
+      .filter(c=> c.entity.name === this._entity.name)[0]
+      .meta;
     let table = meta.class.entity.table;
     this._provider.addToMapping(table);
     this._buildFrom(meta);
@@ -34,8 +36,8 @@ export class VisitorSelect extends VisitorBase {
     if (node.value.type === 'Identifier')
       node.value.path = node.path;
     else {
-      let entityName = node.key.name;
-      let table = this._getMeta(entityName).class.entity.table;
+      let property = node.key.name;
+      let table = this._getMeta(property).class.entity.table;
       this._provider.addToMapping(table, node.path);
       node.path = node.path ? node.path + '.' + table : table;
       node.value.path = node.path;
@@ -60,19 +62,4 @@ export class VisitorSelect extends VisitorBase {
     };
   }
 }
-
-// ObjectProperty(node) {
-//   node.value.table = node.table;
-//   // let meta = getmeta() this.check(meta)
-//   if (node.value.type !== 'Identifier') {
-//     /* If the type of node.value is an ObjectExpression or an ArrayExpression
-//     then the object property doesn't belong to the main entity.
-//     We must assign this attribute a new prefix and build a join statement. */
-//     node.prefix = this._provider.nextPrefix();
-//     this._buildJoin(node);
-//     node.value.parent = node;
-//     node.value.prefix = node.prefix;
-//   }
-//   this.visit(node.value);
-// }
 

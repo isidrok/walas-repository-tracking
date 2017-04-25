@@ -66,12 +66,15 @@ export class VisitorBase {
     else name = node.parent.name;
     return name;
   }
-  //coger propiedades del meta de entidad principal, de ahí sacar la relación y con ella sacar la clase a la que apunta y sacar su meta
-  _getMeta(entityName) {
-    let entity = this._metaEntities.filter(c => {
-      return c.entity.name === entityName;
-    })[0];
-    return entity.meta;
+  // coger propiedades del meta de entidad principal, de ahí sacar la relación y con ella sacar la clase a la que apunta y sacar su meta
+  _getMeta(property) {
+    let meta = this._metaEntities.filter(c => {
+      return c.entity.name === this._entity.name;
+    })[0].meta;
+    let relationEntity = meta.properties[property].hasOne || meta.properties[property].hasMany;
+    return this._metaEntities.filter(c => {
+      return c.entity.name === relationEntity.name;
+    })[0].meta;
   }
   _getProperty(meta, entityName) {
     let props = meta.properties;

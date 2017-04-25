@@ -96,13 +96,20 @@ var VisitorBase = exports.VisitorBase = function () {
       if (node.type !== 'Identifier') name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;else name = node.parent.name;
       return name;
     }
+    // coger propiedades del meta de entidad principal, de ahí sacar la relación y con ella sacar la clase a la que apunta y sacar su meta
+
   }, {
     key: '_getMeta',
-    value: function _getMeta(entityName) {
-      var entity = this._metaEntities.filter(function (c) {
-        return c.entity.name === entityName;
-      })[0];
-      return entity.meta;
+    value: function _getMeta(property) {
+      var _this = this;
+
+      var meta = this._metaEntities.filter(function (c) {
+        return c.entity.name === _this._entity.name;
+      })[0].meta;
+      var relationEntity = meta.properties[property].hasOne || meta.properties[property].hasMany;
+      return this._metaEntities.filter(function (c) {
+        return c.entity.name === relationEntity.name;
+      })[0].meta;
     }
   }, {
     key: '_getProperty',
@@ -124,11 +131,11 @@ var VisitorBase = exports.VisitorBase = function () {
   }, {
     key: '_getAllJoins',
     value: function _getAllJoins(join, obj) {
-      var _this = this;
+      var _this2 = this;
 
       join.reduce(function (pre, cur) {
         pre[cur.prefix] = cur.join;
-        _this._getAllJoins(cur.join, obj);
+        _this2._getAllJoins(cur.join, obj);
         return pre;
       }, obj);
     }

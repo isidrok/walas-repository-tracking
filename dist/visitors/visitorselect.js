@@ -27,12 +27,16 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
   _createClass(VisitorSelect, [{
     key: 'ArrowFunctionExpression',
     value: function ArrowFunctionExpression(node) {
+      var _this2 = this;
+
       /* The entire body of the arrow function is flagged with a
       prefix which will be shared by all the attributes that directly
       belong to the main entity, so this is the moment to build the
       from statement, in addition, this ensures that the from is not build
       more than once since only one arrow function expression will be processed.*/
-      var meta = this._getMeta(this._entity.name);
+      var meta = this._metaEntities.filter(function (c) {
+        return c.entity.name === _this2._entity.name;
+      })[0].meta;
       var table = meta.class.entity.table;
       this._provider.addToMapping(table);
       this._buildFrom(meta);
@@ -42,36 +46,36 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
   }, {
     key: 'ObjectExpression',
     value: function ObjectExpression(node) {
-      var _this2 = this;
-
-      node.properties.forEach(function (c) {
-        c.path = node.path;
-        c.parent = node;
-        _this2.visit(c);
-      });
-    }
-  }, {
-    key: 'ArrayExpression',
-    value: function ArrayExpression(node) {
       var _this3 = this;
 
-      node.elements.forEach(function (c) {
+      node.properties.forEach(function (c) {
         c.path = node.path;
         c.parent = node;
         _this3.visit(c);
       });
     }
   }, {
+    key: 'ArrayExpression',
+    value: function ArrayExpression(node) {
+      var _this4 = this;
+
+      node.elements.forEach(function (c) {
+        c.path = node.path;
+        c.parent = node;
+        _this4.visit(c);
+      });
+    }
+  }, {
     key: 'ObjectProperty',
     value: function ObjectProperty(node) {
       if (node.value.type === 'Identifier') node.value.path = node.path;else {
-        var entityName = node.key.name;
-        var table = this._getMeta(entityName).class.entity.table;
+        var property = node.key.name;
+        var table = this._getMeta(property).class.entity.table;
         this._provider.addToMapping(table, node.path);
         node.path = node.path ? node.path + '.' + table : table;
         node.value.path = node.path;
         node.value.parent = node;
-        this._buildJoin(node);
+        // this._buildJoin(node);
       }
       this.visit(node.value);
     }
@@ -98,18 +102,3 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
 
   return VisitorSelect;
 }(_visitorbase.VisitorBase);
-
-// ObjectProperty(node) {
-//   node.value.table = node.table;
-//   // let meta = getmeta() this.check(meta)
-//   if (node.value.type !== 'Identifier') {
-//     /* If the type of node.value is an ObjectExpression or an ArrayExpression
-//     then the object property doesn't belong to the main entity.
-//     We must assign this attribute a new prefix and build a join statement. */
-//     node.prefix = this._provider.nextPrefix();
-//     this._buildJoin(node);
-//     node.value.parent = node;
-//     node.value.prefix = node.prefix;
-//   }
-//   this.visit(node.value);
-// }

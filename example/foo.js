@@ -1,5 +1,6 @@
 import { Bar } from './bar';
-import { HasOne, Entity, Required } from 'walas-decorators';
+import { Baz } from './baz';
+import { HasOne, HasMany, Entity, Required } from 'walas-decorators';
 
 @Entity({ table: 'FOO', provider: 'MySQL' })
 export class Foo {
@@ -21,6 +22,11 @@ export class Foo {
   @Required()
   @HasOne(Bar)
   get bar() {
+    return this._bar;
+  }
+   @Required()
+  @HasMany(Baz)
+  get bazs() {
     return this._bar;
   }
 }
