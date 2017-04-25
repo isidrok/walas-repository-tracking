@@ -27,14 +27,16 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
   _createClass(VisitorSelect, [{
     key: 'ArrowFunctionExpression',
     value: function ArrowFunctionExpression(node) {
-      /* The entire body of the arrow function will be flagged with a
+      /* The entire body of the arrow function is flagged with a
       prefix which will be shared by all the attributes that directly
       belong to the main entity, so this is the moment to build the
       from statement, in addition, this ensures that the from is not build
       more than once since only one arrow function expression will be processed.*/
-      var firstPrefix = this._provider.nextPrefix();
-      node.body.prefix = firstPrefix;
-      this._buildFrom(firstPrefix);
+      var meta = this._getMeta(this._entity.name);
+      var table = meta.class.entity.table;
+      this._provider.addToMapping(table);
+      this._buildFrom(meta);
+      node.body.path = table;
       this.visit(node.body);
     }
   }, {
@@ -43,8 +45,8 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
       var _this2 = this;
 
       node.properties.forEach(function (c) {
+        c.path = node.path;
         c.parent = node;
-        c.prefix = node.prefix;
         _this2.visit(c);
       });
     }
@@ -54,24 +56,22 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
       var _this3 = this;
 
       node.elements.forEach(function (c) {
+        c.path = node.path;
         c.parent = node;
-        c.prefix = node.prefix;
         _this3.visit(c);
       });
     }
   }, {
     key: 'ObjectProperty',
     value: function ObjectProperty(node) {
-      node.value.prefix = node.prefix;
-      // let meta = getmeta() this.check(meta)
-      if (node.value.type !== 'Identifier') {
-        /* Here we have an object property which is a container for other object
-        properties, so we know that it doesn't belong to the main entity.
-        We must assign this attribute a new prefix and build a join statement. */
-        node.prefix = this._provider.nextPrefix();
-        this._buildJoin(node);
+      if (node.value.type === 'Identifier') node.value.path = node.path;else {
+        var entityName = node.key.name;
+        var table = this._getMeta(entityName).class.entity.table;
+        this._provider.addToMapping(table, node.path);
+        node.path = node.path ? node.path + '.' + table : table;
+        node.value.path = node.path;
         node.value.parent = node;
-        node.value.prefix = node.prefix;
+        this._buildJoin(node);
       }
       this.visit(node.value);
     }
@@ -79,19 +79,18 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
     key: 'Identifier',
     value: function Identifier(node) {
       this._provider.grammar.select.push({
-        prefix: node.prefix,
+        prefix: this._provider.getPrefix(node.path),
         field: node.name
       });
     }
   }, {
     key: '_buildFrom',
-    value: function _buildFrom(firstPrefix) {
-      var meta = this._getMeta(this._entity.name);
+    value: function _buildFrom(meta) {
       var table = meta.class.entity.table;
       var provider = meta.class.entity.provider;
       this._provider.grammar.from = {
         from: table,
-        prefix: firstPrefix,
+        prefix: this._provider.getPrefix(table),
         provider: provider
       };
     }
@@ -99,3 +98,18 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
 
   return VisitorSelect;
 }(_visitorbase.VisitorBase);
+
+// ObjectProperty(node) {
+//   node.value.table = node.table;
+//   // let meta = getmeta() this.check(meta)
+//   if (node.value.type !== 'Identifier') {
+//     /* If the type of node.value is an ObjectExpression or an ArrayExpression
+//     then the object property doesn't belong to the main entity.
+//     We must assign this attribute a new prefix and build a join statement. */
+//     node.prefix = this._provider.nextPrefix();
+//     this._buildJoin(node);
+//     node.value.parent = node;
+//     node.value.prefix = node.prefix;
+//   }
+//   this.visit(node.value);
+// }

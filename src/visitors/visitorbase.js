@@ -6,7 +6,7 @@ export class VisitorBase {
     this._entity = entity;
     this._metaEntities = getMetaEntities(context.constructor);
     this._provider = provider;
-    this._provider.resetPrefix();
+    // this._provider.resetPrefix();
   }
   File(node) {
     this.visit(node.program);
@@ -31,26 +31,33 @@ export class VisitorBase {
     // {type:'left',table:'bar',prefix:'b', provider:'google',on:["id","id"],join:[]
     let joins = {};
     this._getAllJoins(this._provider.grammar.join, joins);
-    let imInside = joins[node.prefix];
-    if (!imInside) {
-      let name = node.type !== 'Identifier' ? node.key.name : node.name;
-      let myParentIsInside = node.parent ? joins[node.parent.prefix] : undefined;
-      let entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
-      let meta = this._getMeta(name);
-      let property = this._getProperty(entityMeta, name);
-      let obj = {
-        prefix: node.prefix,
-        table: meta.class.entity.table,
-        required: property.required,
-        relation: property.hasOne ? 'hasOne' : 'hasMany',
-        provider: property.provider || meta.class.entity.provider,
-        on: ['id', 'id'], // some kind of convention??
-        join: [],
-      };
+    let prefix = this._provider.getPrefix(node.path);
+    let imInside = joins[prefix];
 
-      let destination = myParentIsInside || this._provider.grammar.join;
-      destination.push(obj);
-    }
+    if (imInside) return;
+
+    let name = node.type !== 'Identifier' ? node.key.name : node.name;
+
+    let path = node.path.split('.');
+    let parentPath = path.slice(0, path.length - 1).join('.');
+    let myParentIsInside = parentPath ? joins[this._provider.getPrefix(parentPath)] : undefined;
+
+    let entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
+    let meta = this._getMeta(name);
+    let property = this._getProperty(entityMeta, name);
+
+    let obj = {
+      prefix: prefix,
+      table: meta.class.entity.table,
+      required: property.required,
+      relation: property.hasOne ? 'hasOne' : 'hasMany',
+      provider: property.provider || meta.class.entity.provider,
+      on: ['id', 'id'], // some kind of convention??
+      join: [],
+    };
+
+    let destination = myParentIsInside || this._provider.grammar.join;
+    destination.push(obj);
   }
   _getParentName(node) {
     let name;
@@ -59,8 +66,9 @@ export class VisitorBase {
     else name = node.parent.name;
     return name;
   }
+  //coger propiedades del meta de entidad principal, de ahí sacar la relación y con ella sacar la clase a la que apunta y sacar su meta
   _getMeta(entityName) {
-    let entity = (this._metaEntities).filter(c => {
+    let entity = this._metaEntities.filter(c => {
       return c.entity.name === entityName;
     })[0];
     return entity.meta;

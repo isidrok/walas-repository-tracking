@@ -1,8 +1,7 @@
 import { VisitorOrder, VisitorSelect, VisitorWhere } from './visitors';
 export class ProviderSql {
   constructor() {
-    // TODO change prefix for fixedPrefix + counter
-    this._prefixes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
+    this._prefix = 't';
     this._counter = 0;
     this._grammar = {
       select: [],
@@ -11,15 +10,34 @@ export class ProviderSql {
       where: [],
       order: [],
     };
+    this._mapping = {};
   }
   get grammar() {
     return this._grammar;
+  }
+  get mapping() {
+    return this._mapping;
   }
   resetPrefix() {
     this._counter = 0;
   }
   nextPrefix() {
-    return this._prefixes[this._counter++];
+    return this._prefix + this._counter++;
+  }
+  addToMapping(table, path) {
+    let container = path ? this._getMappingRoute(path) : this._mapping;
+    if (!container[table])
+      container[table] = { self: this.nextPrefix() };
+  }
+  getPrefix(path) {
+    return path.split('.').reduce((pre, cur) => {
+      return pre[cur];
+    }, this._mapping).self;
+  }
+  _getMappingRoute(path) {
+    return path.split('.').reduce((pre, cur) => {
+      return pre[cur];
+    }, this._mapping);
   }
   exec(expression, entity, context) {
     if (expression.select) {

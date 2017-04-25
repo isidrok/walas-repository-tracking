@@ -21,7 +21,7 @@ var VisitorBase = exports.VisitorBase = function () {
     this._entity = entity;
     this._metaEntities = (0, _walasMetaApi.getMetaEntities)(context.constructor);
     this._provider = provider;
-    this._provider.resetPrefix();
+    // this._provider.resetPrefix();
   }
 
   _createClass(VisitorBase, [{
@@ -61,26 +61,33 @@ var VisitorBase = exports.VisitorBase = function () {
       // {type:'left',table:'bar',prefix:'b', provider:'google',on:["id","id"],join:[]
       var joins = {};
       this._getAllJoins(this._provider.grammar.join, joins);
-      var imInside = joins[node.prefix];
-      if (!imInside) {
-        var name = node.type !== 'Identifier' ? node.key.name : node.name;
-        var myParentIsInside = node.parent ? joins[node.parent.prefix] : undefined;
-        var entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
-        var meta = this._getMeta(name);
-        var property = this._getProperty(entityMeta, name);
-        var obj = {
-          prefix: node.prefix,
-          table: meta.class.entity.table,
-          required: property.required,
-          relation: property.hasOne ? 'hasOne' : 'hasMany',
-          provider: property.provider || meta.class.entity.provider,
-          on: ['id', 'id'], // some kind of convention??
-          join: []
-        };
+      var prefix = this._provider.getPrefix(node.path);
+      var imInside = joins[prefix];
 
-        var destination = myParentIsInside || this._provider.grammar.join;
-        destination.push(obj);
-      }
+      if (imInside) return;
+
+      var name = node.type !== 'Identifier' ? node.key.name : node.name;
+
+      var path = node.path.split('.');
+      var parentPath = path.slice(0, path.length - 1).join('.');
+      var myParentIsInside = parentPath ? joins[this._provider.getPrefix(parentPath)] : undefined;
+
+      var entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
+      var meta = this._getMeta(name);
+      var property = this._getProperty(entityMeta, name);
+
+      var obj = {
+        prefix: prefix,
+        table: meta.class.entity.table,
+        required: property.required,
+        relation: property.hasOne ? 'hasOne' : 'hasMany',
+        provider: property.provider || meta.class.entity.provider,
+        on: ['id', 'id'], // some kind of convention??
+        join: []
+      };
+
+      var destination = myParentIsInside || this._provider.grammar.join;
+      destination.push(obj);
     }
   }, {
     key: '_getParentName',

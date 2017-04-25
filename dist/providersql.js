@@ -15,8 +15,7 @@ var ProviderSql = exports.ProviderSql = function () {
   function ProviderSql() {
     _classCallCheck(this, ProviderSql);
 
-    // TODO change prefix for fixedPrefix + counter
-    this._prefixes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
+    this._prefix = 't';
     this._counter = 0;
     this._grammar = {
       select: [],
@@ -25,6 +24,7 @@ var ProviderSql = exports.ProviderSql = function () {
       where: [],
       order: []
     };
+    this._mapping = {};
   }
 
   _createClass(ProviderSql, [{
@@ -35,7 +35,27 @@ var ProviderSql = exports.ProviderSql = function () {
   }, {
     key: 'nextPrefix',
     value: function nextPrefix() {
-      return this._prefixes[this._counter++];
+      return this._prefix + this._counter++;
+    }
+  }, {
+    key: 'addToMapping',
+    value: function addToMapping(table, path) {
+      var container = path ? this._getMappingRoute(path) : this._mapping;
+      if (!container[table]) container[table] = { self: this.nextPrefix() };
+    }
+  }, {
+    key: 'getPrefix',
+    value: function getPrefix(path) {
+      return path.split('.').reduce(function (pre, cur) {
+        return pre[cur];
+      }, this._mapping).self;
+    }
+  }, {
+    key: '_getMappingRoute',
+    value: function _getMappingRoute(path) {
+      return path.split('.').reduce(function (pre, cur) {
+        return pre[cur];
+      }, this._mapping);
     }
   }, {
     key: 'exec',
@@ -58,6 +78,11 @@ var ProviderSql = exports.ProviderSql = function () {
     key: 'grammar',
     get: function get() {
       return this._grammar;
+    }
+  }, {
+    key: 'mapping',
+    get: function get() {
+      return this._mapping;
     }
   }]);
 

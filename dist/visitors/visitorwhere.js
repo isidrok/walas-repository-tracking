@@ -26,6 +26,16 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
     return _possibleConstructorReturn(this, (VisitorWhere.__proto__ || Object.getPrototypeOf(VisitorWhere)).call(this, expression, entity, context, provider));
   }
 
+  /**
+   * Overwrites visitorBase visit method
+   * in order to propagate the expression
+   * @param {any} node
+   * @param {any} expression
+   *
+   * @memberOf VisitorWhere
+   */
+
+
   _createClass(VisitorWhere, [{
     key: 'visit',
     value: function visit(node, expression) {
@@ -36,8 +46,25 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
     key: 'ArrowFunctionExpression',
     value: function ArrowFunctionExpression(node) {
       var expression = this._provider.grammar.where;
+      if (expression[0]) throw new Error('There can be only one where statement');
       this.visit(node.body, expression);
     }
+    /**
+     * If the logical expression has parenthesis buidls
+     * a new array that will store its contents otherwise
+     * the nodes of the logical expression will be inserted
+     * directly into the where expression of the grammar.
+     * In order to store the elements correctly the order is:
+     * 1- insert the right hand side of the node.
+     * 2- insert the node operator.
+     * 3- insert the left hand side of the node.
+     * These elements must be inserted at the beggining of the expression.
+     * @param {any} node
+     * @param {any} expression
+     *
+     * @memberOf VisitorWhere
+     */
+
   }, {
     key: 'LogicalExpression',
     value: function LogicalExpression(node, expression) {
@@ -53,6 +80,27 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
 
       if (parenthesis) expression.unshift(nodeExpression);
     }
+
+    /**
+     * First makes a distinction between the parameter
+     * and the attribute inside the binaryExpression,
+     * thit is, if there is an expression of the form
+     * 'foo.id === 10' the attribute is foo.id and the
+     * parameter 10.
+     * Then visits the attribute in order to assign it a prefix.
+     * Finally builds an object with the following attributes:
+     *  prefix: prefix associated to the attribute,
+     *  field: the name of the attribute,
+     *  operator: the operator of the binaryExpression,
+     *  param: the parameter concatenated with an '@',
+     *  parenthesis: true if the expression is flagged as parenthesized
+     * and prepends the object to the expression.
+     * @param {any} node
+     * @param {any} expression
+     *
+     * @memberOf VisitorWhere
+     */
+
   }, {
     key: 'BinaryExpression',
     value: function BinaryExpression(node, expression) {
@@ -68,6 +116,7 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
       }
 
       _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, attr);
+
       obj.prefix = attr.property.parent.prefix;
       obj.field = attr.property.name;
       obj.operator = node.operator;
