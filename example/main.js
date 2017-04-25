@@ -14,16 +14,15 @@ context.Bar.add(bar);
 context.Baz.add(baz1);
 context.Baz.add(baz2);
 
-context.Foo
-  .select(c => {id, description, Bar:{ id, description } })
-  .where('(c=>(c.id === p0 || p1 === c.Bar.id && c.Bar.Baz.description !== p2))')
-  // .where('(c => ((c.id1 === p0 || c.Bar.id2 === p1 || c.id3 === p2) && c.id4 === p3 || c.id5 === p4))')
-  // .where('(c => (c.id1 === p0 && c.Bar.id2 === p1 || c.id3 === p2))')
-  .orderBy('(c=>c.id)')
-  .thenByDescending('(c=>c.Bar.description)')
+context.Foo.select('(c=>({id,description,Bar:{id,description}}))')
+  // .where('(c=>c.id === p0 || p1 === c.Bar.id && c.Bar.Baz.description !== p2)')
+  // .where('(c => (c.id1 === p0 || c.Bar.id2 === p1 || c.id3 === p2) && c.id4 === p3 || c.id5 === p4)')
+  // .where('(c => c.id1 === p0 && c.Bar.id2 === p1 || c.id3 === p2)')
+  // .orderBy('(c=>c.id)')
+  // .thenByDescending('(c=>c.Bar.description)')
   // .thenBy('(c=>c.Bar.Baz.description)')
   .exec();
 
-console.log(context._provider.grammar);
+console.log(context);
 
 

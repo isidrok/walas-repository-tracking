@@ -15,6 +15,7 @@ var ProviderSql = exports.ProviderSql = function () {
   function ProviderSql() {
     _classCallCheck(this, ProviderSql);
 
+    // TODO change prefix for fixedPrefix + counter
     this._prefixes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
     this._counter = 0;
     this._grammar = {

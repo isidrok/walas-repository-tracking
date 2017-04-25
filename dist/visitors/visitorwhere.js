@@ -7,6 +7,8 @@ exports.VisitorWhere = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _visitorbase = require('./visitorbase');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -26,77 +28,62 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
 
   _createClass(VisitorWhere, [{
     key: 'visit',
-    value: function visit(node, expression, type) {
+    value: function visit(node, expression) {
       var visitor = this[node.type];
-      visitor.call(this, node, expression, type);
+      visitor.call(this, node, expression);
     }
   }, {
     key: 'ArrowFunctionExpression',
     value: function ArrowFunctionExpression(node) {
-      this.visit(node.body);
+      var expression = this._provider.grammar.where;
+      this.visit(node.body, expression);
     }
   }, {
     key: 'LogicalExpression',
-    value: function LogicalExpression(node) {
+    value: function LogicalExpression(node, expression) {
       var lhs = node.left;
       var rhs = node.right;
-      var expression = [];
-      if (node.extra && node.extra.parenthesized) {
-        var left = lhs;
-        while (left.left) {
-          left.parenthesis = left.parenthesis || [];
-          left.parenthesis.push('(');
-          left = left.left;
-        }
-        var right = rhs;
-        while (right.right) {
-          right.parenthesis = right.parenthesis || [];
-          right.parenthesis.push(')');
-          right = right.right;
-        }
-      }
 
-      this.visit(lhs, expression, 'left');
-      this.visit(rhs, expression, 'right');
+      var parenthesis = node.extra && node.extra.parenthesized;
+      var nodeExpression = parenthesis ? [] : expression;
 
-      expression.length === 2 ? expression.splice(1, 0, node.operator) : expression.unshift(node.operator);
-      this._provider.grammar.where = this._provider.grammar.where.concat(expression);
+      this.visit(rhs, nodeExpression);
+      nodeExpression.unshift(node.operator);
+      this.visit(lhs, nodeExpression);
+
+      if (parenthesis) expression.unshift(nodeExpression);
     }
   }, {
     key: 'BinaryExpression',
-    value: function BinaryExpression(node, expression, position) {
+    value: function BinaryExpression(node, expression) {
+      var parenthesis = node.extra && node.extra.parenthesized;
       var attr = node.left.type === 'Identifier' ? node.right : node.left;
       var param = node.left.type === 'Identifier' ? node.left : node.right;
       var obj = {};
-      var createJoin = true;
 
-      this._provider.resetPrefix();
       node.prefix = this._provider.nextPrefix();
-
       if (attr.object.type === 'Identifier') {
         attr.object.prefix = node.prefix;
         attr.property.parent = attr.object;
-        createJoin = false;
       }
 
-      this.visit(attr);
+      _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, attr);
       obj.prefix = attr.property.parent.prefix;
       obj.field = attr.property.name;
       obj.operator = node.operator;
       obj.param = '@' + param.name;
-      obj.parenthesis = node.parenthesis;
+      obj.parenthesis = parenthesis;
 
-      if (createJoin) this._buildJoin(attr.property.parent);
-      position === 'left' ? expression.unshift(obj) : expression.push(obj);
+      expression.unshift(obj);
     }
   }, {
     key: 'MemberExpression',
     value: function MemberExpression(node) {
       if (node.object.type === 'MemberExpression') {
         node.property.parent = node.object.property;
-        this.visit(node.object);
+        _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, node.object);
       }
-      this.visit(node.property);
+      _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, node.property);
     }
   }, {
     key: 'Identifier',
