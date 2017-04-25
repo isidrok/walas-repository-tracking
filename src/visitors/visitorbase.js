@@ -6,7 +6,6 @@ export class VisitorBase {
     this._entity = entity;
     this._metaEntities = getMetaEntities(context.constructor);
     this._provider = provider;
-    // this._provider.resetPrefix();
   }
   File(node) {
     this.visit(node.program);
@@ -28,24 +27,34 @@ export class VisitorBase {
     visitor.call(this, node);
   }
   _buildJoin(node) {
-    // {type:'left',table:'bar',prefix:'b', provider:'google',on:["id","id"],join:[]
-    let joins = {};
-    this._getAllJoins(this._provider.grammar.join, joins);
+    // if there is a join with the same prefix already built return
+    let joins = this._getAllJoins(this._provider.grammar.join);
     let prefix = this._provider.getPrefix(node.path);
-    let imInside = joins[prefix];
+    let joinBuilt = joins[prefix];
+    if (joinBuilt) return;
 
-    if (imInside) return;
-
-    let name = node.type !== 'Identifier' ? node.key.name : node.name;
-
+    // if there is not a join with that prefix we get the parent of the property
+    // to know if the new join must be creaded inside the join array of the grammar
+    // or in case the node has a parent, inside its parent join array.
     let path = node.path.split('.');
-    let parentPath = path.slice(0, path.length - 1).join('.');
-    let myParentIsInside = parentPath ? joins[this._provider.getPrefix(parentPath)] : undefined;
+    let pathToParent = path.slice(0, path.length - 1).join('.');
+    let parentHasJoin = pathToParent ? joins[this._provider.getPrefix(pathToParent)] : undefined;
 
-    let entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
+    // TODO: if !parentHasJoin build parent join before continuing with the child join
+
+    // here we get the name of the property that creates the relation,
+    // and then find in which metadata is the information about the property stored,
+    // it can be in the main entity metadata or in its parent metadata (if it has parent).
+    // Once we know this we extract the information about the property (required, relationType
+    // and its class name).
+    // From the class name we finally get the table name and the provider.
+    let propertyName = node.type !== 'Identifier' ? node.key.name : node.name;
+    let entityMeta = parentHasJoin ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
     let meta = this._getMeta(name);
     let property = this._getProperty(entityMeta, name);
 
+    // finally we build the join object and insert it in the destination,
+    // the join of the parent or the join of the grammar
     let obj = {
       prefix: prefix,
       table: meta.class.entity.table,
@@ -55,7 +64,6 @@ export class VisitorBase {
       on: ['id', 'id'], // some kind of convention??
       join: [],
     };
-
     let destination = myParentIsInside || this._provider.grammar.join;
     destination.push(obj);
   }
@@ -66,7 +74,6 @@ export class VisitorBase {
     else name = node.parent.name;
     return name;
   }
-  // coger propiedades del meta de entidad principal, de ahí sacar la relación y con ella sacar la clase a la que apunta y sacar su meta
   _getMeta(property) {
     let meta = this._metaEntities.filter(c => {
       return c.entity.name === this._entity.name;
@@ -90,7 +97,12 @@ export class VisitorBase {
    * @param {Array} join
    * @param {Object} obj
    */
-  _getAllJoins(join, obj) {
+  _getAllJoins(join) {
+    let obj = {};
+    this.__getAllJoins(join, obj);
+    return obj;
+  }
+  __getAllJoins(join, obj) {
     join.reduce((pre, cur) => {
       pre[cur.prefix] = cur.join;
       this._getAllJoins(cur.join, obj);
