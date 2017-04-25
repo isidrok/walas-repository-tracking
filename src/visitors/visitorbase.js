@@ -27,7 +27,8 @@ export class VisitorBase {
     visitor.call(this, node);
   }
   _buildJoin(node) {
-    // if there is a join with the same prefix already built return
+    // search if there is a join with the same prefix already built
+    // and in that case  return
     let joins = this._getAllJoins(this._provider.grammar.join);
     let prefix = this._provider.getPrefix(node.path);
     let joinBuilt = joins[prefix];
@@ -49,9 +50,11 @@ export class VisitorBase {
     // and its class name).
     // From the class name we finally get the table name and the provider.
     let propertyName = node.type !== 'Identifier' ? node.key.name : node.name;
-    let entityMeta = parentJoin ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
-    let meta = this._getMeta(name);
-    let property = this._getProperty(entityMeta, name);
+    let targetMeta = parentJoin ?
+      this._getMeta(_getEntityFromProperty(propertyName, node.path)) :
+      this._getMeta(this._entity.name);
+    let meta = this._getMeta(propertyName);
+    let property = this._getProperty(entityMeta, propertyName);
 
     // finally we build the join object and insert it in the destination,
     // the join of the parent or the join of the grammar
@@ -67,14 +70,13 @@ export class VisitorBase {
     let destination = parentJoin || this._provider.grammar.join;
     destination.push(obj);
   }
-  _getParentName(node) {
-    let name;
-    if (node.type !== 'Identifier')
-      name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;
-    else name = node.parent.name;
-    return name;
-  }
-  _getMeta(property) {
+
+/**
+ *
+ * @param {*} property
+ * @param {*} path
+ */
+  _getMeta(property, path) {
     let meta = this._metaEntities.filter(c => {
       return c.entity.name === this._entity.name;
     })[0].meta;
@@ -83,14 +85,7 @@ export class VisitorBase {
       return c.entity.name === relationEntity.name;
     })[0].meta;
   }
-  _getProperty(meta, entityName) {
-    let props = meta.properties;
-    let property = Object.keys(props).filter(key => {
-      let relation = props[key].hasMany || props[key].hasOne;
-      return relation.name === entityName;
-    })[0];
-    return props[property];
-  }
+
   /**
    * Searches recursively for all the join arrays in the grammar and stores
    * them using the prefix as a key so they can be managed easily.

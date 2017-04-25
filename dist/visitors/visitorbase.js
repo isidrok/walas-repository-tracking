@@ -21,7 +21,6 @@ var VisitorBase = exports.VisitorBase = function () {
     this._entity = entity;
     this._metaEntities = (0, _walasMetaApi.getMetaEntities)(context.constructor);
     this._provider = provider;
-    // this._provider.resetPrefix();
   }
 
   _createClass(VisitorBase, [{
@@ -58,24 +57,35 @@ var VisitorBase = exports.VisitorBase = function () {
   }, {
     key: '_buildJoin',
     value: function _buildJoin(node) {
-      // {type:'left',table:'bar',prefix:'b', provider:'google',on:["id","id"],join:[]
-      var joins = {};
-      this._getAllJoins(this._provider.grammar.join, joins);
+      // search if there is a join with the same prefix already built
+      // and in that case  return
+      var joins = this._getAllJoins(this._provider.grammar.join);
       var prefix = this._provider.getPrefix(node.path);
-      var imInside = joins[prefix];
+      var joinBuilt = joins[prefix];
+      if (joinBuilt) return;
 
-      if (imInside) return;
-
-      var name = node.type !== 'Identifier' ? node.key.name : node.name;
-
+      // if there is not a join with that prefix we get the parent of the property
+      // to know if the new join must be creaded inside the join array of the grammar
+      // or in case the node has a parent, inside its parent join array.
       var path = node.path.split('.');
-      var parentPath = path.slice(0, path.length - 1).join('.');
-      var myParentIsInside = parentPath ? joins[this._provider.getPrefix(parentPath)] : undefined;
+      var pathToParent = path.slice(0, path.length - 1).join('.');
+      var parentJoin = pathToParent ? joins[this._provider.getPrefix(pathToParent)] : undefined;
 
-      var entityMeta = myParentIsInside ? this._getMeta(this._getParentName(node)) : this._getMeta(this._entity.name);
-      var meta = this._getMeta(name);
-      var property = this._getProperty(entityMeta, name);
+      // TODO: if !parentJoin build parent join before continuing with the child join
 
+      // here we get the name of the property that creates the relation,
+      // and then find in which metadata is the information about the property stored,
+      // it can be in the main entity metadata or in its parent metadata (if it has parent).
+      // Once we know this we extract the information about the property (required, relationType
+      // and its class name).
+      // From the class name we finally get the table name and the provider.
+      var propertyName = node.type !== 'Identifier' ? node.key.name : node.name;
+      var targetMeta = parentJoin ? this._getMeta(_getEntityFromProperty(propertyName, node.path)) : this._getMeta(this._entity.name);
+      var meta = this._getMeta(propertyName);
+      var property = this._getProperty(entityMeta, propertyName);
+
+      // finally we build the join object and insert it in the destination,
+      // the join of the parent or the join of the grammar
       var obj = {
         prefix: prefix,
         table: meta.class.entity.table,
@@ -85,22 +95,20 @@ var VisitorBase = exports.VisitorBase = function () {
         on: ['id', 'id'], // some kind of convention??
         join: []
       };
-
-      var destination = myParentIsInside || this._provider.grammar.join;
+      var destination = parentJoin || this._provider.grammar.join;
       destination.push(obj);
     }
   }, {
-    key: '_getParentName',
-    value: function _getParentName(node) {
-      var name = void 0;
-      if (node.type !== 'Identifier') name = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;else name = node.parent.name;
-      return name;
+    key: '_getParentProperty',
+    value: function _getParentProperty(node) {
+      var property = void 0;
+      if (node.type !== 'Identifier') property = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;
+      // else property = node.parent.name;
+      return property || node.parent.name;
     }
-    // coger propiedades del meta de entidad principal, de ahí sacar la relación y con ella sacar la clase a la que apunta y sacar su meta
-
   }, {
     key: '_getMeta',
-    value: function _getMeta(property) {
+    value: function _getMeta(entity) {
       var _this = this;
 
       var meta = this._metaEntities.filter(function (c) {
@@ -130,7 +138,14 @@ var VisitorBase = exports.VisitorBase = function () {
 
   }, {
     key: '_getAllJoins',
-    value: function _getAllJoins(join, obj) {
+    value: function _getAllJoins(join) {
+      var obj = {};
+      this.__getAllJoins(join, obj);
+      return obj;
+    }
+  }, {
+    key: '__getAllJoins',
+    value: function __getAllJoins(join, obj) {
       var _this2 = this;
 
       join.reduce(function (pre, cur) {
@@ -143,3 +158,12 @@ var VisitorBase = exports.VisitorBase = function () {
 
   return VisitorBase;
 }();
+// _getMeta(property) {
+//     let meta = this._metaEntities.filter(c => {
+//       return c.entity.name === this._entity.name;
+//     })[0].meta;
+//     let relationEntity = meta.properties[property].hasOne || meta.properties[property].hasMany;
+//     return this._metaEntities.filter(c => {
+//       return c.entity.name === relationEntity.name;
+//     })[0].meta;
+//   }

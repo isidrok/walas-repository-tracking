@@ -75,7 +75,7 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
         node.path = node.path ? node.path + '.' + table : table;
         node.value.path = node.path;
         node.value.parent = node;
-        // this._buildJoin(node);
+        this._buildJoin(node);
       }
       this.visit(node.value);
     }
