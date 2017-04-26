@@ -18,8 +18,6 @@ export class VisitorWhere extends VisitorBase {
   }
   ArrowFunctionExpression(node) {
     let expression = this._provider.grammar.where;
-    if (expression[0])
-      throw new Error('There can be only one where statement');
     this.visit(node.body, expression);
   }
   /**
@@ -76,31 +74,43 @@ export class VisitorWhere extends VisitorBase {
     let attr = node.left.type === 'Identifier' ? node.right : node.left;
     let param = node.left.type === 'Identifier' ? node.left : node.right;
     let obj = {};
-
-    node.prefix = this._provider.nextPrefix();
     if (attr.object.type === 'Identifier') {
-      attr.object.prefix = node.prefix;
+      attr.property.noJoin = true;
       attr.property.parent = attr.object;
     }
-
+    attr.property.noJoin = true;
     super.visit(attr);
-
-    obj.prefix = attr.property.parent.prefix;
+    obj.prefix = this._provider.getPrefix(attr.property.entities, this._metaEntities);
     obj.field = attr.property.name;
     obj.operator = node.operator;
     obj.param = '@' + param.name;
     obj.parenthesis = parenthesis;
-
     expression.unshift(obj);
   }
   MemberExpression(node) {
-    if (node.object.type === 'MemberExpression') {
-      node.property.parent = node.object.property;
-      super.visit(node.object);
+    if (node.object.type === 'MemberExpression') super.visit(node.object);
+    if (node.object.type === 'Identifier') {
+      /**
+       * if the object is an identifier that means that we are
+       * in the first element of the expression, for example
+       * in Foo.orderBy(c=>c.bar.id) the current node contains c.bar
+       * and the object is c, which represents Foo, so we add the main
+       * entity to the node containing c and to the mapping
+       */
+      node.object.entities = [this._entity];
+      this._provider.addToMapping(node.object.entities, this._metaEntities);
     }
+    node.property.parent = node.object.property || node.object;
     super.visit(node.property);
   }
   Identifier(node) {
-    node.prefix = this._provider.nextPrefix();
+    node.entities = node.parent.entities;
+    if (node.noJoin) return;
+    let property = node.name;
+    let propertyEntities = node.parent.entities
+      .concat(this.getEntity(node.parent.entities, property));
+    this._provider.addToMapping(propertyEntities, this._metaEntities);
+    this.buildJoin(node, propertyEntities);
+    node.entities = propertyEntities;
   }
 }

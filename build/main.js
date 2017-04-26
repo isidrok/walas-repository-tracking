@@ -20,12 +20,12 @@ context.Baz.add(baz1);
 context.Baz.add(baz2);
 
 context.Foo
-// .select('(c=>({id,description,bar:{bazs:{id},description},bazs:{id}}))')
-// .where('(c=>c.id === p0 || p1 === c.Bar.id && c.Bar.Baz.description !== p2)')
-// .where('(c => (c.id1 === p0 || c.Bar.id2 === p1 || c.id3 === p2) && c.id4 === p3 || c.id5 === p4)')
+.select('(c=>({id,description,bar:{bazs:{id},description},bazs:{id}}))')
+// .where('(c=>c.id === p0 || p1 === c.bar.id && c.bar.bazs.description !== p2)')
+.where('(c => (c.id === p0 || c.bar.id2 === p1 || c.bar.bazs.id === p2) && c.bazs.description === p3)')
 // .where('(c => c.id1 === p0 && c.Bar.id2 === p1 || c.id3 === p2)')
-// .orderBy('(c=>c.id)')
-// .thenByDescending('(c=>c.bar.description)')
+.orderBy('(c=>c.id)')
+// .thenByDescending('(c=>c.bar.decription)')
 .thenBy('(c=>c.bar.bazs.description)')
 .exec();
 
