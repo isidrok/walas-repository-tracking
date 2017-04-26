@@ -24,78 +24,182 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
     return _possibleConstructorReturn(this, (VisitorSelect.__proto__ || Object.getPrototypeOf(VisitorSelect)).call(this, expression, entity, context, provider));
   }
 
+  /**
+   * Adds the prefix of the main entity to the mapping
+   * then builds the from statement of the grammar and
+   * propagates the entity to the body of the arrow function
+   * @param {any} node
+   *
+   * @memberOf VisitorSelect
+   */
+
+
   _createClass(VisitorSelect, [{
     key: 'ArrowFunctionExpression',
     value: function ArrowFunctionExpression(node) {
       var _this2 = this;
 
-      /* The entire body of the arrow function is flagged with a
-      prefix which will be shared by all the attributes that directly
-      belong to the main entity, so this is the moment to build the
-      from statement, in addition, this ensures that the from is not build
-      more than once since only one arrow function expression will be processed.*/
-      var meta = this._metaEntities.filter(function (c) {
+      /**
+       * Extract the metadata and the entity of the one
+       * that was used to call the select, for example
+       * in context.foo.select we get foo
+       */
+      var metaEntity = this._metaEntities.filter(function (c) {
         return c.entity.name === _this2._entity.name;
-      })[0].meta;
-      var table = meta.class.entity.table;
-      this._provider.addToMapping(table);
-      this._buildFrom(meta);
-      node.body.path = table;
+      })[0];
+      var entity = metaEntity.entity;
+      var meta = metaEntity.meta;
+
+      /**
+       * Flag the the arrow function with the main entity
+       * and propagate it to its body.
+       * This will be important in order to build the joins and
+       * manage the prefix of the mapping.
+       */
+      node.entities = [entity];
+      node.body.entities = node.entities;
+
+      /**
+       * Adds the entity to the provider mapping and
+       * we are working with the main entity this is the
+       * place to build the from object of the grammar.
+       * Additionally, as there should not be more arrow functions
+       * inside the query this will only happen once.
+       */
+      this._provider.addToMapping(node.entities, this._metaEntities);
+      this._buildFrom(node.entities, meta);
       this.visit(node.body);
     }
+
+    /**
+     * Inserts its entities array into its children
+     * and visits each one of them.
+     * @param {any} node
+     *
+     * @memberOf VisitorSelect
+     */
+
   }, {
     key: 'ObjectExpression',
     value: function ObjectExpression(node) {
       var _this3 = this;
 
       node.properties.forEach(function (c) {
-        c.path = node.path;
-        c.parent = node;
+        c.entities = node.entities;
         _this3.visit(c);
       });
     }
+
+    /**
+    * Inserts its entities array into its children
+    * and visits each one of them.
+    * @param {any} node
+    *
+    * @memberOf VisitorSelect
+    */
+
   }, {
     key: 'ArrayExpression',
     value: function ArrayExpression(node) {
       var _this4 = this;
 
       node.elements.forEach(function (c) {
-        c.path = node.path;
-        c.parent = node;
+        c.entities = node.entities;
         _this4.visit(c);
       });
     }
+
+    /**
+     * Identifies new entities on the query and adds them
+     * to the mapping. Then it builds the new join statements.
+     * @param {any} node
+     *
+     * @memberOf VisitorSelect
+     */
+
   }, {
     key: 'ObjectProperty',
     value: function ObjectProperty(node) {
-      if (node.value.type === 'Identifier') node.value.path = node.path;else {
+      /**
+       * When the type of node.value is an identifier
+       * it is because the object property belongs to
+       * one entity and does not contain nested ones.
+       *
+       * For example, in {foo:{bar:{id,description}}
+       * the type of node.value in foo and bar is an
+       * object expression, while in id and description
+       * is an identifier.
+       */
+      if (node.value.type === 'Identifier') {
+        /**
+         * If it is an identifier we just need to mark
+         * its value with the entities so we can assign
+         * a prefix to it later on.
+         */
+        node.value.entities = node.entities;
+      } else {
+        /**
+         * When it is and object expression we take the
+         * name of the property it represents inside an entity.
+         * Whit that property we can look in the parent entity
+         * for the it and get the entity which conforms the relation
+         * between the parent entity and this property.
+         * Then we push that entity into the entities of the node,
+         * add it to the mapping and pass it to its child.
+         *
+         * As are in a possibly new visites entity a join statement
+         * has to be built aswell.
+         */
         var property = node.key.name;
-        var table = this._getMeta(property).class.entity.table;
-        this._provider.addToMapping(table, node.path);
-        node.path = node.path ? node.path + '.' + table : table;
-        node.value.path = node.path;
-        node.value.parent = node;
-        this._buildJoin(node);
+        node.entities.push(this.getEntity(node.entities, property));
+        this._provider.addToMapping(node.entities, this._metaEntities);
+        node.value.entities = node.entities;
+        this.buildJoin(node);
       }
       this.visit(node.value);
     }
+
+    /**
+     * Adds all the identifiers of the select expression
+     * to the select property of the grammar.
+     * Select objects have the following attributes:
+     *  prefix: prefix of the table to which the property (identifier) belongs to,
+     *  field: name of the property (identifier)
+     * @param {any} node
+     *
+     * @memberOf VisitorSelect
+     */
+
   }, {
     key: 'Identifier',
     value: function Identifier(node) {
       this._provider.grammar.select.push({
-        prefix: this._provider.getPrefix(node.path),
+        prefix: this._provider.getPrefix(node.entities, this._metaEntities),
         field: node.name
       });
     }
+
+    /**
+     * Builds the from statement of the grammar
+     * using the entity and the metadata passed by
+     * the arrow function from the main entity.
+     * The from stament must have the following attributes:
+     *  from: table the main entity belongs to,
+     *  prefix: prefix associated to that table,
+     *  provider: provider in which the table is stored
+     * @param {any} entities
+     * @param {any} meta
+     *
+     * @memberOf VisitorSelect
+     */
+
   }, {
     key: '_buildFrom',
-    value: function _buildFrom(meta) {
-      var table = meta.class.entity.table;
-      var provider = meta.class.entity.provider;
+    value: function _buildFrom(entities, meta) {
       this._provider.grammar.from = {
-        from: table,
-        prefix: this._provider.getPrefix(table),
-        provider: provider
+        from: meta.class.entity.table,
+        prefix: this._provider.getPrefix(entities, this._metaEntities),
+        provider: meta.class.entity.provider
       };
     }
   }]);

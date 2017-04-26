@@ -28,39 +28,85 @@ var ProviderSql = exports.ProviderSql = function () {
   }
 
   _createClass(ProviderSql, [{
-    key: 'resetPrefix',
-    value: function resetPrefix() {
-      this._counter = 0;
-    }
-  }, {
     key: 'nextPrefix',
     value: function nextPrefix() {
       return this._prefix + this._counter++;
     }
+
+    /**
+     * Adds the tables of the entities specified as arguments
+     * into the mapping object, if a table is not found in the path,
+     * for example the entities are [foo,bar,baz], and bar has not
+     * yet a prefix, then it creates the prefix of bar aswell.
+     * Prefixes are stored inside the attribute self of the target object,
+     * so the previous example would create the following mapping:
+     * mapping:{
+     *  foo:{
+     *   self:'t1',
+     *   bar:{
+     *    self: 't2',
+     *    baz:{self:'t3'}
+     *   }
+     *  }
+     * }
+     * @param {any} entities
+     * @param {any} metaEntities
+     *
+     * @memberOf ProviderSql
+     */
+
   }, {
     key: 'addToMapping',
-    value: function addToMapping(table, path) {
-      var container = path ? this._getMappingRoute(path) : this._mapping;
-      if (!container[table]) container[table] = { self: this.nextPrefix() };
+    value: function addToMapping(entities, metaEntities) {
+      var _this = this;
+
+      var tables = this._mapToTables(entities, metaEntities);
+      tables.reduce(function (pre, cur, i) {
+        pre[cur] = pre[cur] || { self: _this.nextPrefix() };
+        return pre[cur];
+      }, this._mapping);
     }
+    /**
+     * Gets the prefix associated with the last entity
+     * inside a sequence of them.
+     * @param {any} entities
+     * @param {any} metaEntities
+     * @return {string} prefix of the table of the last entity in entities.
+     *
+     * @memberOf ProviderSql
+     */
+
   }, {
     key: 'getPrefix',
-    value: function getPrefix(path) {
-      return path.split('.').reduce(function (pre, cur) {
+    value: function getPrefix(entities, metaEntities) {
+      var tables = this._mapToTables(entities, metaEntities);
+      return tables.reduce(function (pre, cur) {
         return pre[cur];
       }, this._mapping).self;
     }
+    /**
+     * Maps an array of entities to its tables stracted
+     * form the metadata of each of the entities.
+     * @param {any} entities
+     * @param {any} metaEntities
+     * @return {string} table associated with the las entity in entities.
+     *
+     * @memberOf ProviderSql
+     */
+
   }, {
-    key: '_getMappingRoute',
-    value: function _getMappingRoute(path) {
-      return path.split('.').reduce(function (pre, cur) {
-        return pre[cur];
-      }, this._mapping);
+    key: '_mapToTables',
+    value: function _mapToTables(entities, metaEntities) {
+      return entities.map(function (entity) {
+        return metaEntities.filter(function (metaEntity) {
+          return metaEntity.entity.name === entity.name;
+        })[0].meta.class.entity.table;
+      });
     }
   }, {
     key: 'exec',
     value: function exec(expression, entity, context) {
-      var _this = this;
+      var _this2 = this;
 
       if (expression.select) {
         var select = new _visitors.VisitorSelect(expression.select, entity, context, this);
@@ -71,18 +117,13 @@ var ProviderSql = exports.ProviderSql = function () {
         where.exec();
       }
       expression.order.map(function (order) {
-        return new _visitors.VisitorOrder(order, entity, context, _this).exec();
+        return new _visitors.VisitorOrder(order, entity, context, _this2).exec();
       });
     }
   }, {
     key: 'grammar',
     get: function get() {
       return this._grammar;
-    }
-  }, {
-    key: 'mapping',
-    get: function get() {
-      return this._mapping;
     }
   }]);
 

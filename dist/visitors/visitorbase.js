@@ -54,86 +54,111 @@ var VisitorBase = exports.VisitorBase = function () {
       var visitor = this[node.type];
       visitor.call(this, node);
     }
+
+    /**
+     * Adds a join objet to the correct join array,
+     * first is gets the prefix of the entity the property belongs to,
+     * then creates the join object and extracts all the joins of the grammar.
+     * If there is already an array of joins with that prefix it is appended
+     * to it, otherwise it is added to the joins of the grammar object.
+     * @param {any} node
+     *
+     * @memberOf VisitorBase
+     */
+
   }, {
-    key: '_buildJoin',
-    value: function _buildJoin(node) {
-      // search if there is a join with the same prefix already built
-      // and in that case  return
+    key: 'buildJoin',
+    value: function buildJoin(node) {
+      var entities = node.entities;
+      var parent = this._getParent(entities);
+      var property = node.type !== 'Identifier' ? node.key.name : node.name;
+      var prefix = this._provider.getPrefix(entities, this._metaEntities);
+      var join = this._getjoinObject(parent, property, prefix);
       var joins = this._getAllJoins(this._provider.grammar.join);
-      var prefix = this._provider.getPrefix(node.path);
-      var joinBuilt = joins[prefix];
-      if (joinBuilt) return;
+      // TODO if !joins[parent] createJoin with parent
+      joins[prefix] ? joins[prefix].join.push[join] : joins[prefix] = join;
+    }
+    /**
+     * Builds a join object taking information form:
+     *  -Property parent: contains if the property
+     *  is required or not and the kind of relation.
+     *  -Property entity metainformation: contains the provider
+     *  and the table of the entity to which the property belongs to.
+     *
+     * Then it builds a join object whose attributes are:
+     *  table: table of the entity the property belongs to,
+     *  prefix: prefix associated to that table in the mapping,
+     *  relation: type of the relation between that entity and its parent,
+     *  required: if the property is required or not,
+     *  on: array of attributes that are common in both entities,
+     *  join: empty array to store possible future joins
+     *
+     * @param {any} parent
+     * @param {any} property
+     * @param {any} prefix
+     * @return {object} join object with the properties described
+     * previously.
+     * @memberOf VisitorBase
+     */
 
-      // if there is not a join with that prefix we get the parent of the property
-      // to know if the new join must be creaded inside the join array of the grammar
-      // or in case the node has a parent, inside its parent join array.
-      var path = node.path.split('.');
-      var pathToParent = path.slice(0, path.length - 1).join('.');
-      var parentJoin = pathToParent ? joins[this._provider.getPrefix(pathToParent)] : undefined;
-
-      // TODO: if !parentJoin build parent join before continuing with the child join
-
-      // here we get the name of the property that creates the relation,
-      // and then find in which metadata is the information about the property stored,
-      // it can be in the main entity metadata or in its parent metadata (if it has parent).
-      // Once we know this we extract the information about the property (required, relationType
-      // and its class name).
-      // From the class name we finally get the table name and the provider.
-      var propertyName = node.type !== 'Identifier' ? node.key.name : node.name;
-      var targetMeta = parentJoin ? this._getMeta(_getEntityFromProperty(propertyName, node.path)) : this._getMeta(this._entity.name);
-      var meta = this._getMeta(propertyName);
-      var property = this._getProperty(entityMeta, propertyName);
-
-      // finally we build the join object and insert it in the destination,
-      // the join of the parent or the join of the grammar
-      var obj = {
+  }, {
+    key: '_getjoinObject',
+    value: function _getjoinObject(parent, property, prefix) {
+      var prop = this._metaEntities.filter(function (c) {
+        return c.entity.name === parent.name;
+      })[0].meta.properties[property];
+      var relation = prop.hasOne || prop.hasMany;
+      var entity = this._metaEntities.filter(function (c) {
+        return c.entity.name === relation.name;
+      })[0].meta.class.entity;
+      return {
+        table: entity.table,
         prefix: prefix,
-        table: meta.class.entity.table,
-        required: property.required,
-        relation: property.hasOne ? 'hasOne' : 'hasMany',
-        provider: property.provider || meta.class.entity.provider,
-        on: ['id', 'id'], // some kind of convention??
+        relation: prop.hasOne ? 'hasOne' : 'hasMany',
+        required: prop.required,
+        on: ['id', 'id'],
         join: []
       };
-      var destination = parentJoin || this._provider.grammar.join;
-      destination.push(obj);
     }
-  }, {
-    key: '_getParentProperty',
-    value: function _getParentProperty(node) {
-      var property = void 0;
-      if (node.type !== 'Identifier') property = node.parent.key ? node.parent.key.name : node.parent.parent.key.name;
-      // else property = node.parent.name;
-      return property || node.parent.name;
-    }
-  }, {
-    key: '_getMeta',
-    value: function _getMeta(entity) {
-      var _this = this;
 
-      var meta = this._metaEntities.filter(function (c) {
-        return c.entity.name === _this._entity.name;
+    /**
+     * Searches for the entity that a given property
+     * belongs to, in the metadata of the parent of the
+     * entity we are currently working with.
+     *
+     * @param {any} entities
+     * @param {any} property
+     * @return {object} entity to which the property
+     * belongs to.
+     * @memberOf VisitorBase
+     */
+
+  }, {
+    key: 'getEntity',
+    value: function getEntity(entities, property) {
+      var parent = this._getParent(entities);
+      var parentMeta = this._metaEntities.filter(function (c) {
+        return c.entity.name === parent.name;
       })[0].meta;
-      var relationEntity = meta.properties[property].hasOne || meta.properties[property].hasMany;
-      return this._metaEntities.filter(function (c) {
-        return c.entity.name === relationEntity.name;
-      })[0].meta;
+      var propMeta = parentMeta.properties[property];
+      var relation = propMeta.hasOne || propMeta.hasMany;
+      return relation;
     }
   }, {
-    key: '_getProperty',
-    value: function _getProperty(meta, entityName) {
-      var props = meta.properties;
-      var property = Object.keys(props).filter(function (key) {
-        var relation = props[key].hasMany || props[key].hasOne;
-        return relation.name === entityName;
-      })[0];
-      return props[property];
+    key: '_getParent',
+    value: function _getParent(entities) {
+      var parent = entities.length === 1 ? entities[0] : entities[entities.length - 2];
+      return parent;
     }
     /**
      * Searches recursively for all the join arrays in the grammar and stores
      * them using the prefix as a key so they can be managed easily.
-     * @param {Array} join
-     * @param {Object} obj
+     *
+     * @param {any} join
+     * @return {object} whose keys are the prefixes of the tables inside the
+     * join array and are pointing to the specific array of that join
+     *
+     * @memberOf VisitorBase
      */
 
   }, {
@@ -146,11 +171,11 @@ var VisitorBase = exports.VisitorBase = function () {
   }, {
     key: '__getAllJoins',
     value: function __getAllJoins(join, obj) {
-      var _this2 = this;
+      var _this = this;
 
       join.reduce(function (pre, cur) {
         pre[cur.prefix] = cur.join;
-        _this2._getAllJoins(cur.join, obj);
+        _this.__getAllJoins(cur.join, obj);
         return pre;
       }, obj);
     }
@@ -158,12 +183,3 @@ var VisitorBase = exports.VisitorBase = function () {
 
   return VisitorBase;
 }();
-// _getMeta(property) {
-//     let meta = this._metaEntities.filter(c => {
-//       return c.entity.name === this._entity.name;
-//     })[0].meta;
-//     let relationEntity = meta.properties[property].hasOne || meta.properties[property].hasMany;
-//     return this._metaEntities.filter(c => {
-//       return c.entity.name === relationEntity.name;
-//     })[0].meta;
-//   }

@@ -26,71 +26,99 @@ export class VisitorBase {
     let visitor = this[node.type];
     visitor.call(this, node);
   }
-  _buildJoin(node) {
-    // search if there is a join with the same prefix already built
-    // and in that case  return
+
+  /**
+   * Adds a join objet to the correct join array,
+   * first is gets the prefix of the entity the property belongs to,
+   * then creates the join object and extracts all the joins of the grammar.
+   * If there is already an array of joins with that prefix it is appended
+   * to it, otherwise it is added to the joins of the grammar object.
+   * @param {any} node
+   *
+   * @memberOf VisitorBase
+   */
+  buildJoin(node) {
+    let entities = node.entities;
+    let parent = this._getParent(entities);
+    let property = node.type !== 'Identifier' ? node.key.name : node.name;
+    let prefix = this._provider.getPrefix(entities, this._metaEntities);
+    let join = this._getjoinObject(parent, property, prefix);
     let joins = this._getAllJoins(this._provider.grammar.join);
-    let prefix = this._provider.getPrefix(node.path);
-    let joinBuilt = joins[prefix];
-    if (joinBuilt) return;
-
-    // if there is not a join with that prefix we get the parent of the property
-    // to know if the new join must be creaded inside the join array of the grammar
-    // or in case the node has a parent, inside its parent join array.
-    let path = node.path.split('.');
-    let pathToParent = path.slice(0, path.length - 1).join('.');
-    let parentJoin = pathToParent ? joins[this._provider.getPrefix(pathToParent)] : undefined;
-
-    // TODO: if !parentJoin build parent join before continuing with the child join
-
-    // here we get the name of the property that creates the relation,
-    // and then find in which metadata is the information about the property stored,
-    // it can be in the main entity metadata or in its parent metadata (if it has parent).
-    // Once we know this we extract the information about the property (required, relationType
-    // and its class name).
-    // From the class name we finally get the table name and the provider.
-    let propertyName = node.type !== 'Identifier' ? node.key.name : node.name;
-    let targetMeta = parentJoin ?
-      this._getMeta(_getEntityFromProperty(propertyName, node.path)) :
-      this._getMeta(this._entity.name);
-    let meta = this._getMeta(propertyName);
-    let property = this._getProperty(entityMeta, propertyName);
-
-    // finally we build the join object and insert it in the destination,
-    // the join of the parent or the join of the grammar
-    let obj = {
-      prefix: prefix,
-      table: meta.class.entity.table,
-      required: property.required,
-      relation: property.hasOne ? 'hasOne' : 'hasMany',
-      provider: property.provider || meta.class.entity.provider,
-      on: ['id', 'id'], // some kind of convention??
-      join: [],
-    };
-    let destination = parentJoin || this._provider.grammar.join;
-    destination.push(obj);
+    // TODO if !joins[parent] createJoin with parent
+    joins[prefix] ? joins[prefix].join.push[join] : joins[prefix] = join;
   }
-
-/**
- *
- * @param {*} property
- * @param {*} path
- */
-  _getMeta(property, path) {
-    let meta = this._metaEntities.filter(c => {
-      return c.entity.name === this._entity.name;
-    })[0].meta;
-    let relationEntity = meta.properties[property].hasOne || meta.properties[property].hasMany;
-    return this._metaEntities.filter(c => {
-      return c.entity.name === relationEntity.name;
-    })[0].meta;
+  /**
+   * Builds a join object taking information form:
+   *  -Property parent: contains if the property
+   *  is required or not and the kind of relation.
+   *  -Property entity metainformation: contains the provider
+   *  and the table of the entity to which the property belongs to.
+   *
+   * Then it builds a join object whose attributes are:
+   *  table: table of the entity the property belongs to,
+   *  prefix: prefix associated to that table in the mapping,
+   *  relation: type of the relation between that entity and its parent,
+   *  required: if the property is required or not,
+   *  on: array of attributes that are common in both entities,
+   *  join: empty array to store possible future joins
+   *
+   * @param {any} parent
+   * @param {any} property
+   * @param {any} prefix
+   * @return {object} join object with the properties described
+   * previously.
+   * @memberOf VisitorBase
+   */
+  _getjoinObject(parent, property, prefix) {
+    let prop = this._metaEntities.filter(c =>
+      c.entity.name === parent.name)[0]
+      .meta.properties[property];
+    let relation = prop.hasOne || prop.hasMany;
+    let entity = this._metaEntities.filter(c =>
+      c.entity.name === relation.name)[0]
+      .meta.class.entity;
+    return {
+      table: entity.table,
+      prefix: prefix,
+      relation: prop.hasOne ? 'hasOne' : 'hasMany',
+      required: prop.required,
+      on: ['id', 'id'],
+      join: []
+    };
   }
 
   /**
+   * Searches for the entity that a given property
+   * belongs to, in the metadata of the parent of the
+   * entity we are currently working with.
+   *
+   * @param {any} entities
+   * @param {any} property
+   * @return {object} entity to which the property
+   * belongs to.
+   * @memberOf VisitorBase
+   */
+  getEntity(entities, property) {
+    let parent = this._getParent(entities);
+    let parentMeta = this._metaEntities.filter(c =>
+      c.entity.name === parent.name)[0].meta;
+    let propMeta = parentMeta.properties[property];
+    let relation = propMeta.hasOne || propMeta.hasMany;
+    return relation;
+  }
+  _getParent(entities) {
+    let parent = entities.length === 1 ? entities[0] : entities[entities.length - 2];
+    return parent;
+  }
+  /**
    * Searches recursively for all the join arrays in the grammar and stores
    * them using the prefix as a key so they can be managed easily.
-   * @param {Array} join
-   * @param {Object} obj
+   *
+   * @param {any} join
+   * @return {object} whose keys are the prefixes of the tables inside the
+   * join array and are pointing to the specific array of that join
+   *
+   * @memberOf VisitorBase
    */
   _getAllJoins(join) {
     let obj = {};
@@ -100,7 +128,7 @@ export class VisitorBase {
   __getAllJoins(join, obj) {
     join.reduce((pre, cur) => {
       pre[cur.prefix] = cur.join;
-      this._getAllJoins(cur.join, obj);
+      this.__getAllJoins(cur.join, obj);
       return pre;
     }, obj);
   }
