@@ -76,6 +76,7 @@ var VisitorBase = exports.VisitorBase = function () {
       var prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
       var joinObj = this._getjoinObject(parent, property, prefix);
       var joins = this._getAllJoins(this._provider.grammar.join);
+      if (joins[prefix]) return;
       // TODO if !joins[parent] createJoin with parent
       var target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
       target.push(joinObj);
