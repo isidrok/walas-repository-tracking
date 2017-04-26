@@ -151,10 +151,10 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
          * has to be built aswell.
          */
         var property = node.key.name;
-        node.entities.push(this.getEntity(node.entities, property));
-        this._provider.addToMapping(node.entities, this._metaEntities);
-        node.value.entities = node.entities;
-        this.buildJoin(node);
+        var propertyEntities = node.entities.concat(this.getEntity(node.entities, property));
+        this._provider.addToMapping(propertyEntities, this._metaEntities);
+        node.value.entities = propertyEntities;
+        this.buildJoin(node, propertyEntities);
       }
       this.visit(node.value);
     }

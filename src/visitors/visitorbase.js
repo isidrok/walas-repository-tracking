@@ -37,15 +37,17 @@ export class VisitorBase {
    *
    * @memberOf VisitorBase
    */
-  buildJoin(node) {
+  buildJoin(node, nextEntities) {
     let entities = node.entities;
-    let parent = this._getParent(entities);
+    let parent = entities[entities.length-1];
     let property = node.type !== 'Identifier' ? node.key.name : node.name;
-    let prefix = this._provider.getPrefix(entities, this._metaEntities);
-    let join = this._getjoinObject(parent, property, prefix);
+    let parentPrefix = this._provider.getPrefix(entities, this._metaEntities);
+    let prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
+    let joinObj = this._getjoinObject(parent, property, prefix);
     let joins = this._getAllJoins(this._provider.grammar.join);
     // TODO if !joins[parent] createJoin with parent
-    joins[prefix] ? joins[prefix].join.push[join] : joins[prefix] = join;
+    let target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
+    target.push(joinObj);
   }
   /**
    * Builds a join object taking information form:
@@ -99,16 +101,12 @@ export class VisitorBase {
    * @memberOf VisitorBase
    */
   getEntity(entities, property) {
-    let parent = this._getParent(entities);
+    let parent = entities[entities.length-1];
     let parentMeta = this._metaEntities.filter(c =>
       c.entity.name === parent.name)[0].meta;
     let propMeta = parentMeta.properties[property];
     let relation = propMeta.hasOne || propMeta.hasMany;
     return relation;
-  }
-  _getParent(entities) {
-    let parent = entities.length === 1 ? entities[0] : entities[entities.length - 2];
-    return parent;
   }
   /**
    * Searches recursively for all the join arrays in the grammar and stores

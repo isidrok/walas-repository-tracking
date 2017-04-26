@@ -68,15 +68,17 @@ var VisitorBase = exports.VisitorBase = function () {
 
   }, {
     key: 'buildJoin',
-    value: function buildJoin(node) {
+    value: function buildJoin(node, nextEntities) {
       var entities = node.entities;
-      var parent = this._getParent(entities);
+      var parent = entities[entities.length - 1];
       var property = node.type !== 'Identifier' ? node.key.name : node.name;
-      var prefix = this._provider.getPrefix(entities, this._metaEntities);
-      var join = this._getjoinObject(parent, property, prefix);
+      var parentPrefix = this._provider.getPrefix(entities, this._metaEntities);
+      var prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
+      var joinObj = this._getjoinObject(parent, property, prefix);
       var joins = this._getAllJoins(this._provider.grammar.join);
       // TODO if !joins[parent] createJoin with parent
-      joins[prefix] ? joins[prefix].join.push[join] : joins[prefix] = join;
+      var target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
+      target.push(joinObj);
     }
     /**
      * Builds a join object taking information form:
@@ -136,19 +138,13 @@ var VisitorBase = exports.VisitorBase = function () {
   }, {
     key: 'getEntity',
     value: function getEntity(entities, property) {
-      var parent = this._getParent(entities);
+      var parent = entities[entities.length - 1];
       var parentMeta = this._metaEntities.filter(function (c) {
         return c.entity.name === parent.name;
       })[0].meta;
       var propMeta = parentMeta.properties[property];
       var relation = propMeta.hasOne || propMeta.hasMany;
       return relation;
-    }
-  }, {
-    key: '_getParent',
-    value: function _getParent(entities) {
-      var parent = entities.length === 1 ? entities[0] : entities[entities.length - 2];
-      return parent;
     }
     /**
      * Searches recursively for all the join arrays in the grammar and stores
