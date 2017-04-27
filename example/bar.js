@@ -1,5 +1,5 @@
 import { Baz } from './baz';
-import { Entity, HasMany } from 'walas-decorators';
+import { Entity, HasMany, Property } from 'walas-decorators';
 
 @Entity({ table: 'BAR', provider: 'MongoDB' })
 export class Bar {
@@ -9,9 +9,11 @@ export class Bar {
     this._phone = phone;
     this._bazs = bazs;
   }
+  @Property()
   get id() {
     return this._id;
   }
+  @Property()
   get description() {
     return this._description;
   }

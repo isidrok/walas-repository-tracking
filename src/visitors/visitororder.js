@@ -1,4 +1,5 @@
 import { VisitorBase } from './visitorbase';
+import { check } from './check';
 export class VisitorOrder extends VisitorBase {
   constructor(order, entity, context, provider) {
     super(order.expression, entity, context, provider);
@@ -12,6 +13,9 @@ export class VisitorOrder extends VisitorBase {
    * @memberOf VisitorOrder
    */
   ArrowFunctionExpression(node) {
+    check.hasOnlyOneParam(node);
+    check.isValidOrderBody(node);
+    this._arrowFuncId = node.params[0].name;
     node.body.property.buildOrder = true;
     this.visit(node.body);
   }
@@ -23,6 +27,7 @@ export class VisitorOrder extends VisitorBase {
    * @memberOf VisitorOrder
    */
   MemberExpression(node) {
+    check.isValidMemberExpression(node, this._arrowFuncId);
     if (node.object.type === 'MemberExpression') this.visit(node.object);
     if (node.object.type === 'Identifier') {
       /**
@@ -49,6 +54,7 @@ export class VisitorOrder extends VisitorBase {
    */
   Identifier(node) {
     node.entities = node.parent.entities;
+    check.isInParentMeta(node, this._metaEntities);
     if (node.buildOrder) this._buildOrder(node);
     else {
       /**

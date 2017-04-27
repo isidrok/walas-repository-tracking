@@ -1,4 +1,4 @@
-import { Entity } from 'walas-decorators';
+import { Entity, Property } from 'walas-decorators';
 
 @Entity({ table: 'BAZ', provider: 'GoogleCloud' })
 export class Baz {
@@ -7,6 +7,7 @@ export class Baz {
     this._description = description;
     this._phone = phone;
   }
+  @Property()
   get id() {
     return this._id;
   }

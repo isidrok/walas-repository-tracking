@@ -103,6 +103,16 @@ var ProviderSql = exports.ProviderSql = function () {
         })[0].meta.class.entity.table;
       });
     }
+    /**
+     * Visits all the attributes of the expression
+     * in order to build the grammar object
+     * @param {any} expression contains the queries
+     * @param {any} entity target entity of the queries
+     * @param {any} context DbContext where the entity is stored
+     *
+     * @memberOf ProviderSql
+     */
+
   }, {
     key: 'exec',
     value: function exec(expression, entity, context) {

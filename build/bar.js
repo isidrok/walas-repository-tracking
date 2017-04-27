@@ -7,7 +7,7 @@ exports.Bar = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _dec, _dec2, _class, _desc, _value, _class2;
+var _dec, _dec2, _dec3, _dec4, _class, _desc, _value, _class2;
 
 var _baz = require('./baz');
 
@@ -44,7 +44,7 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
   return desc;
 }
 
-var Bar = exports.Bar = (_dec = (0, _walasDecorators.Entity)({ table: 'BAR', provider: 'MongoDB' }), _dec2 = (0, _walasDecorators.HasMany)(_baz.Baz), _dec(_class = (_class2 = function () {
+var Bar = exports.Bar = (_dec = (0, _walasDecorators.Entity)({ table: 'BAR', provider: 'MongoDB' }), _dec2 = (0, _walasDecorators.Property)(), _dec3 = (0, _walasDecorators.Property)(), _dec4 = (0, _walasDecorators.HasMany)(_baz.Baz), _dec(_class = (_class2 = function () {
   function Bar(id, description, phone, bazs) {
     _classCallCheck(this, Bar);
 
@@ -77,4 +77,4 @@ var Bar = exports.Bar = (_dec = (0, _walasDecorators.Entity)({ table: 'BAR', pro
   }]);
 
   return Bar;
-}(), (_applyDecoratedDescriptor(_class2.prototype, 'bazs', [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, 'bazs'), _class2.prototype)), _class2)) || _class);
+}(), (_applyDecoratedDescriptor(_class2.prototype, 'id', [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, 'id'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'description', [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, 'description'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bazs', [_dec4], Object.getOwnPropertyDescriptor(_class2.prototype, 'bazs'), _class2.prototype)), _class2)) || _class);

@@ -9,6 +9,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _visitorbase = require('./visitorbase');
 
+var _check = require('./check');
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -39,6 +41,8 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
     value: function ArrowFunctionExpression(node) {
       var _this2 = this;
 
+      _check.check.hasOnlyOneParam(node);
+      _check.check.isValidSelectBody(node);
       /**
        * Extract the metadata and the entity of the one
        * that was used to call the select, for example
@@ -120,6 +124,7 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
   }, {
     key: 'ObjectProperty',
     value: function ObjectProperty(node) {
+      _check.check.isValidObjectProperty(node);
       /**
        * When the type of node.value is an identifier
        * it is because the object property belongs to
@@ -173,6 +178,7 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
   }, {
     key: 'Identifier',
     value: function Identifier(node) {
+      _check.check.isInParentMeta(node, this._metaEntities);
       this._provider.grammar.select.push({
         prefix: this._provider.getPrefix(node.entities, this._metaEntities),
         field: node.name

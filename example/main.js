@@ -16,9 +16,10 @@ context.Baz.add(baz2);
 
 context.Foo
 // .select('(c=>({id,description,bar:{bazs:{id},description},bazs:{id}}))')
-  .where('(c=>c.id === p0 || p1 === c.bar.id && c.bar.bazs.description !== p2)')
-  // .where('(c => (c.id1 === p0 || c.Bar.id2 === p1 || c.id3 === p2) && c.id4 === p3 || c.id5 === p4)')
-  // .where('(c => c.id1 === p0 && c.Bar.id2 === p1 || c.id3 === p2)')
+// .select('(c=>({id,bad2343azs:{id}}))')
+  .where('(c=>c.id === p0 || p1 === c.bar.id)')
+  // .where('(c => (c.description === p0 || c.bar.id === p1 || c.id === p2) && c.bar.bazs.description === p3 || c.bazs.description === p4)')
+  // .where('(c => c.id === p0 && c.bar.id === p1 || c.bazs.description === p2)')
   // .orderBy('(c=>c.id)')
   // .thenByDescending('(c=>c.bar.description)')
   // .thenBy('(c=>c.bar.bazs.description)')

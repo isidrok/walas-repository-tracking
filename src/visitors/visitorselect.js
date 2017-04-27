@@ -1,4 +1,5 @@
 import { VisitorBase } from './visitorbase';
+import { check } from './check';
 export class VisitorSelect extends VisitorBase {
   constructor(expression, entity, context, provider) {
     super(expression, entity, context, provider);
@@ -13,6 +14,8 @@ export class VisitorSelect extends VisitorBase {
    * @memberOf VisitorSelect
    */
   ArrowFunctionExpression(node) {
+    check.hasOnlyOneParam(node);
+    check.isValidSelectBody(node);
     /**
      * Extract the metadata and the entity of the one
      * that was used to call the select, for example
@@ -80,6 +83,7 @@ export class VisitorSelect extends VisitorBase {
    * @memberOf VisitorSelect
    */
   ObjectProperty(node) {
+    check.isValidObjectProperty(node);
     /**
      * When the type of node.value is an identifier
      * it is because the object property belongs to
@@ -131,6 +135,7 @@ export class VisitorSelect extends VisitorBase {
    * @memberOf VisitorSelect
    */
   Identifier(node) {
+    check.isInParentMeta(node, this._metaEntities );
     this._provider.grammar.select.push({
       prefix: this._provider.getPrefix(node.entities, this._metaEntities),
       field: node.name

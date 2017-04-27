@@ -1,11 +1,13 @@
 import { parse } from 'babylon';
 import { getMetaEntities } from 'walas-meta-api';
+import { check } from './check';
 export class VisitorBase {
   constructor(expression, entity, context, provider) {
     this._ast = parse(expression);
     this._entity = entity;
     this._metaEntities = getMetaEntities(context.constructor);
     this._provider = provider;
+    this._arrowFuncId = null;
   }
   File(node) {
     this.visit(node.program);
@@ -38,14 +40,15 @@ export class VisitorBase {
    * @memberOf VisitorBase
    */
   buildJoin(node, nextEntities) {
+    let prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
+    let joins = this._getAllJoins(this._provider.grammar.join);
+    if (joins[prefix]) return;
+
     let entities = node.entities;
-    let parent = entities[entities.length-1];
+    let parent = entities[entities.length - 1];
     let property = node.type !== 'Identifier' ? node.key.name : node.name;
     let parentPrefix = this._provider.getPrefix(entities, this._metaEntities);
-    let prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
     let joinObj = this._getjoinObject(parent, property, prefix);
-    let joins = this._getAllJoins(this._provider.grammar.join);
-    if(joins[prefix])return;
     let target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
     target.push(joinObj);
   }
@@ -101,10 +104,13 @@ export class VisitorBase {
    * @memberOf VisitorBase
    */
   getEntity(entities, property) {
-    let parent = entities[entities.length-1];
+    let node = { entities: entities, name: property };
+    check.isInParentMeta(node, this._metaEntities);
+    let parent = entities[entities.length - 1];
     let parentMeta = this._metaEntities.filter(c =>
       c.entity.name === parent.name)[0].meta;
     let propMeta = parentMeta.properties[property];
+    check.hasRelationData(propMeta);
     let relation = propMeta.hasOne || propMeta.hasMany;
     return relation;
   }

@@ -7,7 +7,7 @@ exports.Foo = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _dec, _dec2, _dec3, _dec4, _dec5, _class, _desc, _value, _class2;
+var _dec, _dec2, _dec3, _dec4, _dec5, _dec6, _dec7, _class, _desc, _value, _class2;
 
 var _bar = require('./bar');
 
@@ -46,7 +46,7 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
   return desc;
 }
 
-var Foo = exports.Foo = (_dec = (0, _walasDecorators.Entity)({ table: 'FOO', provider: 'MySQL' }), _dec2 = (0, _walasDecorators.Required)(), _dec3 = (0, _walasDecorators.HasOne)(_bar.Bar), _dec4 = (0, _walasDecorators.Required)(), _dec5 = (0, _walasDecorators.HasMany)(_baz.Baz), _dec(_class = (_class2 = function () {
+var Foo = exports.Foo = (_dec = (0, _walasDecorators.Entity)({ table: 'FOO', provider: 'MySQL' }), _dec2 = (0, _walasDecorators.Property)(), _dec3 = (0, _walasDecorators.Property)(), _dec4 = (0, _walasDecorators.Required)(), _dec5 = (0, _walasDecorators.HasOne)(_bar.Bar), _dec6 = (0, _walasDecorators.Required)(), _dec7 = (0, _walasDecorators.HasMany)(_baz.Baz), _dec(_class = (_class2 = function () {
   function Foo(id, description, phone, bar) {
     _classCallCheck(this, Foo);
 
@@ -84,4 +84,4 @@ var Foo = exports.Foo = (_dec = (0, _walasDecorators.Entity)({ table: 'FOO', pro
   }]);
 
   return Foo;
-}(), (_applyDecoratedDescriptor(_class2.prototype, 'bar', [_dec2, _dec3], Object.getOwnPropertyDescriptor(_class2.prototype, 'bar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bazs', [_dec4, _dec5], Object.getOwnPropertyDescriptor(_class2.prototype, 'bazs'), _class2.prototype)), _class2)) || _class);
+}(), (_applyDecoratedDescriptor(_class2.prototype, 'id', [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, 'id'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'description', [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, 'description'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bar', [_dec4, _dec5], Object.getOwnPropertyDescriptor(_class2.prototype, 'bar'), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, 'bazs', [_dec6, _dec7], Object.getOwnPropertyDescriptor(_class2.prototype, 'bazs'), _class2.prototype)), _class2)) || _class);

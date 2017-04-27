@@ -11,6 +11,8 @@ var _get = function get(object, property, receiver) { if (object === null) objec
 
 var _visitorbase = require('./visitorbase');
 
+var _check = require('./check');
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -45,6 +47,9 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
   }, {
     key: 'ArrowFunctionExpression',
     value: function ArrowFunctionExpression(node) {
+      _check.check.hasOnlyOneParam(node);
+      _check.check.isValidWhereBody(node);
+      this._arrowFuncId = node.params[0].name;
       var expression = this._provider.grammar.where;
       this.visit(node.body, expression);
     }
@@ -67,6 +72,7 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
   }, {
     key: 'LogicalExpression',
     value: function LogicalExpression(node, expression) {
+      _check.check.isValidLogicalExpression(node);
       var lhs = node.left;
       var rhs = node.right;
 
@@ -103,6 +109,7 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
   }, {
     key: 'BinaryExpression',
     value: function BinaryExpression(node, expression) {
+      _check.check.isValidBinaryExpression(node);
       var parenthesis = node.extra && node.extra.parenthesized;
       var attr = node.left.type === 'Identifier' ? node.right : node.left;
       var param = node.left.type === 'Identifier' ? node.left : node.right;
@@ -111,6 +118,12 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
         attr.property.noJoin = true;
         attr.property.parent = attr.object;
       }
+      /**
+       * the property of the attr node is the last elemnt of the expression
+       * so it refers to the property to be inserted in the where, it is not
+       * a reference to other entity in the system thus we flag it with
+       * noJoin = true.
+       */
       attr.property.noJoin = true;
       _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, attr);
       obj.prefix = this._provider.getPrefix(attr.property.entities, this._metaEntities);
@@ -123,12 +136,13 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
   }, {
     key: 'MemberExpression',
     value: function MemberExpression(node) {
+      _check.check.isValidMemberExpression(node, this._arrowFuncId);
       if (node.object.type === 'MemberExpression') _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, node.object);
       if (node.object.type === 'Identifier') {
         /**
          * if the object is an identifier that means that we are
          * in the first element of the expression, for example
-         * in Foo.orderBy(c=>c.bar.id) the current node contains c.bar
+         * in Foo.where(c=>c.bar.id === 10) the current node contains c.bar
          * and the object is c, which represents Foo, so we add the main
          * entity to the node containing c and to the mapping
          */
@@ -138,10 +152,25 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
       node.property.parent = node.object.property || node.object;
       _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, node.property);
     }
+
+    /**
+     * Propagates the entities of the parent
+     * of the property to the current node.
+     * Then inserts the properties of the
+     * expression into the join array of the
+     * grammar. The properties flagged with
+     * noJoin must be ignored since they are
+     * only used for building the where statement.
+     * @param {any} node
+     *
+     * @memberOf VisitorWhere
+     */
+
   }, {
     key: 'Identifier',
     value: function Identifier(node) {
       node.entities = node.parent.entities;
+      _check.check.isInParentMeta(node, this._metaEntities);
       if (node.noJoin) return;
       var property = node.name;
       var propertyEntities = node.parent.entities.concat(this.getEntity(node.parent.entities, property));

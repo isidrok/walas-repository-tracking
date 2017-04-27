@@ -9,8 +9,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _statemanager = require('./statemanager');
 
-var _walasMetaApi = require('walas-meta-api');
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var DbContext = exports.DbContext = function () {
@@ -19,7 +17,6 @@ var DbContext = exports.DbContext = function () {
 
     this._stateManager = new _statemanager.StateManager();
     this._conventions = [];
-    // this._metaEntities = getMetaEntities(DbContext)
   }
 
   _createClass(DbContext, [{

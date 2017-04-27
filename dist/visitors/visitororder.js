@@ -9,6 +9,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _visitorbase = require('./visitorbase');
 
+var _check = require('./check');
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -38,6 +40,9 @@ var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
   _createClass(VisitorOrder, [{
     key: 'ArrowFunctionExpression',
     value: function ArrowFunctionExpression(node) {
+      _check.check.hasOnlyOneParam(node);
+      _check.check.isValidOrderBody(node);
+      this._arrowFuncId = node.params[0].name;
       node.body.property.buildOrder = true;
       this.visit(node.body);
     }
@@ -52,6 +57,7 @@ var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
   }, {
     key: 'MemberExpression',
     value: function MemberExpression(node) {
+      _check.check.isValidMemberExpression(node, this._arrowFuncId);
       if (node.object.type === 'MemberExpression') this.visit(node.object);
       if (node.object.type === 'Identifier') {
         /**
@@ -81,6 +87,7 @@ var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
     key: 'Identifier',
     value: function Identifier(node) {
       node.entities = node.parent.entities;
+      _check.check.isInParentMeta(node, this._metaEntities);
       if (node.buildOrder) this._buildOrder(node);else {
         /**
          * We take the property from the node, and the entity

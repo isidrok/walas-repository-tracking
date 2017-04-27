@@ -1,4 +1,5 @@
 import { VisitorBase } from './visitorbase';
+import { check } from './check';
 export class VisitorWhere extends VisitorBase {
   constructor(expression, entity, context, provider) {
     super(expression, entity, context, provider);
@@ -17,6 +18,9 @@ export class VisitorWhere extends VisitorBase {
     visitor.call(this, node, expression);
   }
   ArrowFunctionExpression(node) {
+    check.hasOnlyOneParam(node);
+    check.isValidWhereBody(node);
+    this._arrowFuncId = node.params[0].name;
     let expression = this._provider.grammar.where;
     this.visit(node.body, expression);
   }
@@ -36,6 +40,7 @@ export class VisitorWhere extends VisitorBase {
    * @memberOf VisitorWhere
    */
   LogicalExpression(node, expression) {
+    check.isValidLogicalExpression(node);
     let lhs = node.left;
     let rhs = node.right;
 
@@ -70,6 +75,7 @@ export class VisitorWhere extends VisitorBase {
    * @memberOf VisitorWhere
    */
   BinaryExpression(node, expression) {
+    check.isValidBinaryExpression(node);
     let parenthesis = node.extra && node.extra.parenthesized;
     let attr = node.left.type === 'Identifier' ? node.right : node.left;
     let param = node.left.type === 'Identifier' ? node.left : node.right;
@@ -86,7 +92,8 @@ export class VisitorWhere extends VisitorBase {
      */
     attr.property.noJoin = true;
     super.visit(attr);
-    obj.prefix = this._provider.getPrefix(attr.property.entities, this._metaEntities);
+    obj.prefix = this._provider
+      .getPrefix(attr.property.entities, this._metaEntities);
     obj.field = attr.property.name;
     obj.operator = node.operator;
     obj.param = '@' + param.name;
@@ -94,6 +101,7 @@ export class VisitorWhere extends VisitorBase {
     expression.unshift(obj);
   }
   MemberExpression(node) {
+    check.isValidMemberExpression(node, this._arrowFuncId);
     if (node.object.type === 'MemberExpression') super.visit(node.object);
     if (node.object.type === 'Identifier') {
       /**
@@ -124,6 +132,7 @@ export class VisitorWhere extends VisitorBase {
    */
   Identifier(node) {
     node.entities = node.parent.entities;
+    check.isInParentMeta(node, this._metaEntities);
     if (node.noJoin) return;
     let property = node.name;
     let propertyEntities = node.parent.entities

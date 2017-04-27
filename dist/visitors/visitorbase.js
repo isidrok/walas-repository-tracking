@@ -11,6 +11,8 @@ var _babylon = require('babylon');
 
 var _walasMetaApi = require('walas-meta-api');
 
+var _check = require('./check');
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var VisitorBase = exports.VisitorBase = function () {
@@ -21,6 +23,7 @@ var VisitorBase = exports.VisitorBase = function () {
     this._entity = entity;
     this._metaEntities = (0, _walasMetaApi.getMetaEntities)(context.constructor);
     this._provider = provider;
+    this._arrowFuncId = null;
   }
 
   _createClass(VisitorBase, [{
@@ -62,21 +65,22 @@ var VisitorBase = exports.VisitorBase = function () {
      * If there is already an array of joins with that prefix it is appended
      * to it, otherwise it is added to the joins of the grammar object.
      * @param {any} node
-     *
+     * @param {any} nextEntities
      * @memberOf VisitorBase
      */
 
   }, {
     key: 'buildJoin',
     value: function buildJoin(node, nextEntities) {
+      var prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
+      var joins = this._getAllJoins(this._provider.grammar.join);
+      if (joins[prefix]) return;
+
       var entities = node.entities;
       var parent = entities[entities.length - 1];
       var property = node.type !== 'Identifier' ? node.key.name : node.name;
       var parentPrefix = this._provider.getPrefix(entities, this._metaEntities);
-      var prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
       var joinObj = this._getjoinObject(parent, property, prefix);
-      var joins = this._getAllJoins(this._provider.grammar.join);
-      if (joins[prefix]) return;
       var target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
       target.push(joinObj);
     }
@@ -138,11 +142,14 @@ var VisitorBase = exports.VisitorBase = function () {
   }, {
     key: 'getEntity',
     value: function getEntity(entities, property) {
+      var node = { entities: entities, name: property };
+      _check.check.isInParentMeta(node, this._metaEntities);
       var parent = entities[entities.length - 1];
       var parentMeta = this._metaEntities.filter(function (c) {
         return c.entity.name === parent.name;
       })[0].meta;
       var propMeta = parentMeta.properties[property];
+      _check.check.hasRelationData(propMeta);
       var relation = propMeta.hasOne || propMeta.hasMany;
       return relation;
     }
