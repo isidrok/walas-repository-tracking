@@ -111,7 +111,8 @@ export class VisitorSelect extends VisitorBase {
        * has to be built aswell.
        */
       let property = node.key.name;
-      let propertyEntities = node.entities.concat(this.getEntity(node.entities, property));
+      let propertyEntities = node.entities
+        .concat(this.getEntity(node.entities, property));
       this._provider.addToMapping(propertyEntities, this._metaEntities);
       node.value.entities = propertyEntities;
       this.buildJoin(node, propertyEntities);

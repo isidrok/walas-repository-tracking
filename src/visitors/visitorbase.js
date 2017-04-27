@@ -34,7 +34,7 @@ export class VisitorBase {
    * If there is already an array of joins with that prefix it is appended
    * to it, otherwise it is added to the joins of the grammar object.
    * @param {any} node
-   *
+   * @param {any} nextEntities
    * @memberOf VisitorBase
    */
   buildJoin(node, nextEntities) {

@@ -78,6 +78,12 @@ export class VisitorWhere extends VisitorBase {
       attr.property.noJoin = true;
       attr.property.parent = attr.object;
     }
+    /**
+     * the property of the attr node is the last elemnt of the expression
+     * so it refers to the property to be inserted in the where, it is not
+     * a reference to other entity in the system thus we flag it with
+     * noJoin = true.
+     */
     attr.property.noJoin = true;
     super.visit(attr);
     obj.prefix = this._provider.getPrefix(attr.property.entities, this._metaEntities);
@@ -93,7 +99,7 @@ export class VisitorWhere extends VisitorBase {
       /**
        * if the object is an identifier that means that we are
        * in the first element of the expression, for example
-       * in Foo.orderBy(c=>c.bar.id) the current node contains c.bar
+       * in Foo.where(c=>c.bar.id === 10) the current node contains c.bar
        * and the object is c, which represents Foo, so we add the main
        * entity to the node containing c and to the mapping
        */
@@ -103,6 +109,19 @@ export class VisitorWhere extends VisitorBase {
     node.property.parent = node.object.property || node.object;
     super.visit(node.property);
   }
+
+  /**
+   * Propagates the entities of the parent
+   * of the property to the current node.
+   * Then inserts the properties of the
+   * expression into the join array of the
+   * grammar. The properties flagged with
+   * noJoin must be ignored since they are
+   * only used for building the where statement.
+   * @param {any} node
+   *
+   * @memberOf VisitorWhere
+   */
   Identifier(node) {
     node.entities = node.parent.entities;
     if (node.noJoin) return;
