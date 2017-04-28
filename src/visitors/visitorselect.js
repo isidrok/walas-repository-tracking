@@ -1,8 +1,8 @@
 import { VisitorBase } from './visitorbase';
 import { check } from './check';
 export class VisitorSelect extends VisitorBase {
-  constructor(expression, entity, context, provider) {
-    super(expression, entity, context, provider);
+  constructor(expression, entity, context, queryBuilder) {
+    super(expression, entity, context, queryBuilder);
   }
 
   /**
@@ -42,7 +42,7 @@ export class VisitorSelect extends VisitorBase {
      * Additionally, as there should not be more arrow functions
      * inside the query this will only happen once.
      */
-    this._provider.addToMapping(node.entities, this._metaEntities);
+    this._queryBuilder.addToMapping(node.entities, this._metaEntities);
     this._buildFrom(node.entities, meta);
     this.visit(node.body);
   }
@@ -117,7 +117,7 @@ export class VisitorSelect extends VisitorBase {
       let property = node.key.name;
       let propertyEntities = node.entities
         .concat(this._getEntity(node.entities, property));
-      this._provider.addToMapping(propertyEntities, this._metaEntities);
+      this._queryBuilder.addToMapping(propertyEntities, this._metaEntities);
       node.value.entities = propertyEntities;
       this._buildJoin(node, propertyEntities);
     }
@@ -136,8 +136,8 @@ export class VisitorSelect extends VisitorBase {
    */
   Identifier(node) {
     check.isInParentMeta(node, this._metaEntities );
-    this._provider.grammar.select.push({
-      prefix: this._provider.getPrefix(node.entities, this._metaEntities),
+    this._queryBuilder.grammar.select.push({
+      prefix: this._queryBuilder.getPrefix(node.entities, this._metaEntities),
       field: node.name
     });
   }
@@ -156,9 +156,9 @@ export class VisitorSelect extends VisitorBase {
    * @memberOf VisitorSelect
    */
   _buildFrom(entities, meta) {
-    this._provider.grammar.from = {
+    this._queryBuilder.grammar.from = {
       from: meta.class.entity.table,
-      prefix: this._provider.getPrefix(entities, this._metaEntities),
+      prefix: this._queryBuilder.getPrefix(entities, this._metaEntities),
       provider: meta.class.entity.provider
     };
   }

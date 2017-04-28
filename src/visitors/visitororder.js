@@ -1,8 +1,8 @@
 import { VisitorBase } from './visitorbase';
 import { check } from './check';
 export class VisitorOrder extends VisitorBase {
-  constructor(order, entity, context, provider) {
-    super(order.expression, entity, context, provider);
+  constructor(order, entity, context, queryBuilder) {
+    super(order.expression, entity, context, queryBuilder);
     this._type = order.type;
   }
   /**
@@ -38,7 +38,7 @@ export class VisitorOrder extends VisitorBase {
        * entity to the node containing c and to the mapping
        */
       node.object.entities = [this._entity];
-      this._provider.addToMapping(node.object.entities, this._metaEntities);
+      this._queryBuilder.addToMapping(node.object.entities, this._metaEntities);
     }
     // node.object in case the object is an identifier
     node.property.parent = node.object.property || node.object;
@@ -68,7 +68,7 @@ export class VisitorOrder extends VisitorBase {
       let property = node.name;
       let propertyEntities = node.parent.entities
         .concat(this._getEntity(node.parent.entities, property));
-      this._provider.addToMapping(propertyEntities, this._metaEntities);
+      this._queryBuilder.addToMapping(propertyEntities, this._metaEntities);
       this._buildJoin(node, propertyEntities);
       node.entities = propertyEntities;
     }
@@ -86,11 +86,11 @@ export class VisitorOrder extends VisitorBase {
    */
   _buildOrder(node) {
     let order = {
-      prefix: this._provider.getPrefix(node.entities, this._metaEntities),
+      prefix: this._queryBuilder.getPrefix(node.entities, this._metaEntities),
       field: node.name,
       type: this._type,
     };
-    this._provider.grammar.order.push(order);
+    this._queryBuilder.grammar.order.push(order);
   }
 }
 

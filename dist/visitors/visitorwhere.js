@@ -22,10 +22,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
   _inherits(VisitorWhere, _VisitorBase);
 
-  function VisitorWhere(expression, entity, context, provider) {
+  function VisitorWhere(expression, entity, context, queryBuilder) {
     _classCallCheck(this, VisitorWhere);
 
-    return _possibleConstructorReturn(this, (VisitorWhere.__proto__ || Object.getPrototypeOf(VisitorWhere)).call(this, expression, entity, context, provider));
+    return _possibleConstructorReturn(this, (VisitorWhere.__proto__ || Object.getPrototypeOf(VisitorWhere)).call(this, expression, entity, context, queryBuilder));
   }
 
   /**
@@ -50,7 +50,7 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
       _check.check.hasOnlyOneParam(node);
       _check.check.isValidWhereBody(node);
       this._arrowFuncId = node.params[0].name;
-      var expression = this._provider.grammar.where;
+      var expression = this._queryBuilder.grammar.where;
       this.visit(node.body, expression);
     }
     /**
@@ -126,7 +126,7 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
        */
       attr.property.noJoin = true;
       _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, attr);
-      obj.prefix = this._provider.getPrefix(attr.property.entities, this._metaEntities);
+      obj.prefix = this._queryBuilder.getPrefix(attr.property.entities, this._metaEntities);
       obj.field = attr.property.name;
       obj.operator = node.operator;
       obj.param = '@' + param.name;
@@ -147,7 +147,7 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
          * entity to the node containing c and to the mapping
          */
         node.object.entities = [this._entity];
-        this._provider.addToMapping(node.object.entities, this._metaEntities);
+        this._queryBuilder.addToMapping(node.object.entities, this._metaEntities);
       }
       node.property.parent = node.object.property || node.object;
       _get(VisitorWhere.prototype.__proto__ || Object.getPrototypeOf(VisitorWhere.prototype), 'visit', this).call(this, node.property);
@@ -174,7 +174,7 @@ var VisitorWhere = exports.VisitorWhere = function (_VisitorBase) {
       if (node.noJoin) return;
       var property = node.name;
       var propertyEntities = node.parent.entities.concat(this._getEntity(node.parent.entities, property));
-      this._provider.addToMapping(propertyEntities, this._metaEntities);
+      this._queryBuilder.addToMapping(propertyEntities, this._metaEntities);
       this._buildJoin(node, propertyEntities);
       node.entities = propertyEntities;
     }

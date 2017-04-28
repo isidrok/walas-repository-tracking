@@ -16,13 +16,13 @@ var _check = require('./check');
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var VisitorBase = exports.VisitorBase = function () {
-  function VisitorBase(expression, entity, context, provider) {
+  function VisitorBase(expression, entity, context, queryBuilder) {
     _classCallCheck(this, VisitorBase);
 
     this._ast = (0, _babylon.parse)(expression);
     this._entity = entity;
     this._metaEntities = (0, _walasMetaApi.getMetaEntities)(context.constructor);
-    this._provider = provider;
+    this._queryBuilder = queryBuilder;
     this._arrowFuncId = null;
   }
 
@@ -72,16 +72,16 @@ var VisitorBase = exports.VisitorBase = function () {
   }, {
     key: '_buildJoin',
     value: function _buildJoin(node, nextEntities) {
-      var prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
-      var joins = this._getAllJoins(this._provider.grammar.join);
+      var prefix = this._queryBuilder.getPrefix(nextEntities, this._metaEntities);
+      var joins = this._getAllJoins(this._queryBuilder.grammar.join);
       if (joins[prefix]) return;
 
       var entities = node.entities;
       var parent = entities[entities.length - 1];
       var property = node.type !== 'Identifier' ? node.key.name : node.name;
-      var parentPrefix = this._provider.getPrefix(entities, this._metaEntities);
+      var parentPrefix = this._queryBuilder.getPrefix(entities, this._metaEntities);
       var joinObj = this._getJoinObject(parent, property, prefix);
-      var target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
+      var target = joins[parentPrefix] ? joins[parentPrefix] : this._queryBuilder.grammar.join;
       target.push(joinObj);
     }
     /**
@@ -110,6 +110,7 @@ var VisitorBase = exports.VisitorBase = function () {
   }, {
     key: '_getJoinObject',
     value: function _getJoinObject(parent, property, prefix) {
+      // TODO: ADD PROVIDER
       var prop = this._metaEntities.filter(function (c) {
         return c.entity.name === parent.name;
       })[0].meta.properties[property];

@@ -7,7 +7,7 @@ exports.Queryable = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _providersql = require('./providersql');
+var _querybuilder = require('./querybuilder');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -18,7 +18,7 @@ var Queryable = exports.Queryable = function () {
     this._entity = entity;
     this._context = context;
     this._expression = { order: [] };
-    this._provider = new _providersql.ProviderSql();
+    this._queryBuilder = new _querybuilder.QueryBuilder();
   }
 
   _createClass(Queryable, [{
@@ -65,12 +65,12 @@ var Queryable = exports.Queryable = function () {
   }, {
     key: 'exec',
     value: function exec() {
-      this.provider.exec(this._expression, this._entity, this._context);
+      this.queryBuilder.exec(this._expression, this._entity, this._context);
     }
   }, {
-    key: 'provider',
+    key: 'queryBuilder',
     get: function get() {
-      return this._provider;
+      return this._queryBuilder;
     }
   }, {
     key: 'expression',

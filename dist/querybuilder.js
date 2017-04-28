@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.ProviderSql = undefined;
+exports.QueryBuilder = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -11,9 +11,9 @@ var _visitors = require('./visitors');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var ProviderSql = exports.ProviderSql = function () {
-  function ProviderSql() {
-    _classCallCheck(this, ProviderSql);
+var QueryBuilder = exports.QueryBuilder = function () {
+  function QueryBuilder() {
+    _classCallCheck(this, QueryBuilder);
 
     this._prefix = 't';
     this._counter = 0;
@@ -27,7 +27,7 @@ var ProviderSql = exports.ProviderSql = function () {
     this._mapping = {};
   }
 
-  _createClass(ProviderSql, [{
+  _createClass(QueryBuilder, [{
     key: 'nextPrefix',
     value: function nextPrefix() {
       return this._prefix + this._counter++;
@@ -52,7 +52,7 @@ var ProviderSql = exports.ProviderSql = function () {
      * @param {any} entities
      * @param {any} metaEntities
      *
-     * @memberOf ProviderSql
+     * @memberOf QueryBuilder
      */
 
   }, {
@@ -73,7 +73,7 @@ var ProviderSql = exports.ProviderSql = function () {
      * @param {any} metaEntities
      * @return {string} prefix of the table of the last entity in entities.
      *
-     * @memberOf ProviderSql
+     * @memberOf QueryBuilder
      */
 
   }, {
@@ -91,7 +91,7 @@ var ProviderSql = exports.ProviderSql = function () {
      * @param {any} metaEntities
      * @return {string} table associated with the las entity in entities.
      *
-     * @memberOf ProviderSql
+     * @memberOf QueryBuilder
      */
 
   }, {
@@ -110,7 +110,7 @@ var ProviderSql = exports.ProviderSql = function () {
      * @param {any} entity target entity of the queries
      * @param {any} context DbContext where the entity is stored
      *
-     * @memberOf ProviderSql
+     * @memberOf QueryBuilder
      */
 
   }, {
@@ -137,5 +137,5 @@ var ProviderSql = exports.ProviderSql = function () {
     }
   }]);
 
-  return ProviderSql;
+  return QueryBuilder;
 }();

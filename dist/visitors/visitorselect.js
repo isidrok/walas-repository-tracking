@@ -20,10 +20,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
   _inherits(VisitorSelect, _VisitorBase);
 
-  function VisitorSelect(expression, entity, context, provider) {
+  function VisitorSelect(expression, entity, context, queryBuilder) {
     _classCallCheck(this, VisitorSelect);
 
-    return _possibleConstructorReturn(this, (VisitorSelect.__proto__ || Object.getPrototypeOf(VisitorSelect)).call(this, expression, entity, context, provider));
+    return _possibleConstructorReturn(this, (VisitorSelect.__proto__ || Object.getPrototypeOf(VisitorSelect)).call(this, expression, entity, context, queryBuilder));
   }
 
   /**
@@ -70,7 +70,7 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
        * Additionally, as there should not be more arrow functions
        * inside the query this will only happen once.
        */
-      this._provider.addToMapping(node.entities, this._metaEntities);
+      this._queryBuilder.addToMapping(node.entities, this._metaEntities);
       this._buildFrom(node.entities, meta);
       this.visit(node.body);
     }
@@ -157,7 +157,7 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
          */
         var property = node.key.name;
         var propertyEntities = node.entities.concat(this._getEntity(node.entities, property));
-        this._provider.addToMapping(propertyEntities, this._metaEntities);
+        this._queryBuilder.addToMapping(propertyEntities, this._metaEntities);
         node.value.entities = propertyEntities;
         this._buildJoin(node, propertyEntities);
       }
@@ -179,8 +179,8 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
     key: 'Identifier',
     value: function Identifier(node) {
       _check.check.isInParentMeta(node, this._metaEntities);
-      this._provider.grammar.select.push({
-        prefix: this._provider.getPrefix(node.entities, this._metaEntities),
+      this._queryBuilder.grammar.select.push({
+        prefix: this._queryBuilder.getPrefix(node.entities, this._metaEntities),
         field: node.name
       });
     }
@@ -202,9 +202,9 @@ var VisitorSelect = exports.VisitorSelect = function (_VisitorBase) {
   }, {
     key: '_buildFrom',
     value: function _buildFrom(entities, meta) {
-      this._provider.grammar.from = {
+      this._queryBuilder.grammar.from = {
         from: meta.class.entity.table,
-        prefix: this._provider.getPrefix(entities, this._metaEntities),
+        prefix: this._queryBuilder.getPrefix(entities, this._metaEntities),
         provider: meta.class.entity.provider
       };
     }

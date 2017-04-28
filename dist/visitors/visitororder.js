@@ -20,10 +20,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
   _inherits(VisitorOrder, _VisitorBase);
 
-  function VisitorOrder(order, entity, context, provider) {
+  function VisitorOrder(order, entity, context, queryBuilder) {
     _classCallCheck(this, VisitorOrder);
 
-    var _this = _possibleConstructorReturn(this, (VisitorOrder.__proto__ || Object.getPrototypeOf(VisitorOrder)).call(this, order.expression, entity, context, provider));
+    var _this = _possibleConstructorReturn(this, (VisitorOrder.__proto__ || Object.getPrototypeOf(VisitorOrder)).call(this, order.expression, entity, context, queryBuilder));
 
     _this._type = order.type;
     return _this;
@@ -68,7 +68,7 @@ var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
          * entity to the node containing c and to the mapping
          */
         node.object.entities = [this._entity];
-        this._provider.addToMapping(node.object.entities, this._metaEntities);
+        this._queryBuilder.addToMapping(node.object.entities, this._metaEntities);
       }
       // node.object in case the object is an identifier
       node.property.parent = node.object.property || node.object;
@@ -99,7 +99,7 @@ var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
          */
         var property = node.name;
         var propertyEntities = node.parent.entities.concat(this._getEntity(node.parent.entities, property));
-        this._provider.addToMapping(propertyEntities, this._metaEntities);
+        this._queryBuilder.addToMapping(propertyEntities, this._metaEntities);
         this._buildJoin(node, propertyEntities);
         node.entities = propertyEntities;
       }
@@ -120,11 +120,11 @@ var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
     key: '_buildOrder',
     value: function _buildOrder(node) {
       var order = {
-        prefix: this._provider.getPrefix(node.entities, this._metaEntities),
+        prefix: this._queryBuilder.getPrefix(node.entities, this._metaEntities),
         field: node.name,
         type: this._type
       };
-      this._provider.grammar.order.push(order);
+      this._queryBuilder.grammar.order.push(order);
     }
   }]);
 

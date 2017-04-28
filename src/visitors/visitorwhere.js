@@ -1,8 +1,8 @@
 import { VisitorBase } from './visitorbase';
 import { check } from './check';
 export class VisitorWhere extends VisitorBase {
-  constructor(expression, entity, context, provider) {
-    super(expression, entity, context, provider);
+  constructor(expression, entity, context, queryBuilder) {
+    super(expression, entity, context, queryBuilder);
   }
 
   /**
@@ -21,7 +21,7 @@ export class VisitorWhere extends VisitorBase {
     check.hasOnlyOneParam(node);
     check.isValidWhereBody(node);
     this._arrowFuncId = node.params[0].name;
-    let expression = this._provider.grammar.where;
+    let expression = this._queryBuilder.grammar.where;
     this.visit(node.body, expression);
   }
   /**
@@ -92,7 +92,7 @@ export class VisitorWhere extends VisitorBase {
      */
     attr.property.noJoin = true;
     super.visit(attr);
-    obj.prefix = this._provider
+    obj.prefix = this._queryBuilder
       .getPrefix(attr.property.entities, this._metaEntities);
     obj.field = attr.property.name;
     obj.operator = node.operator;
@@ -112,7 +112,7 @@ export class VisitorWhere extends VisitorBase {
        * entity to the node containing c and to the mapping
        */
       node.object.entities = [this._entity];
-      this._provider.addToMapping(node.object.entities, this._metaEntities);
+      this._queryBuilder.addToMapping(node.object.entities, this._metaEntities);
     }
     node.property.parent = node.object.property || node.object;
     super.visit(node.property);
@@ -137,7 +137,7 @@ export class VisitorWhere extends VisitorBase {
     let property = node.name;
     let propertyEntities = node.parent.entities
       .concat(this._getEntity(node.parent.entities, property));
-    this._provider.addToMapping(propertyEntities, this._metaEntities);
+    this._queryBuilder.addToMapping(propertyEntities, this._metaEntities);
     this._buildJoin(node, propertyEntities);
     node.entities = propertyEntities;
   }

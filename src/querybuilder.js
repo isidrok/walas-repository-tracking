@@ -1,5 +1,5 @@
 import { VisitorOrder, VisitorSelect, VisitorWhere } from './visitors';
-export class ProviderSql {
+export class QueryBuilder {
   constructor() {
     this._prefix = 't';
     this._counter = 0;
@@ -38,7 +38,7 @@ export class ProviderSql {
    * @param {any} entities
    * @param {any} metaEntities
    *
-   * @memberOf ProviderSql
+   * @memberOf QueryBuilder
    */
   addToMapping(entities, metaEntities) {
     let tables = this._mapToTables(entities, metaEntities);
@@ -54,7 +54,7 @@ export class ProviderSql {
    * @param {any} metaEntities
    * @return {string} prefix of the table of the last entity in entities.
    *
-   * @memberOf ProviderSql
+   * @memberOf QueryBuilder
    */
   getPrefix(entities, metaEntities) {
     let tables = this._mapToTables(entities, metaEntities);
@@ -69,7 +69,7 @@ export class ProviderSql {
    * @param {any} metaEntities
    * @return {string} table associated with the las entity in entities.
    *
-   * @memberOf ProviderSql
+   * @memberOf QueryBuilder
    */
   _mapToTables(entities, metaEntities) {
     return entities.map(entity =>
@@ -85,7 +85,7 @@ export class ProviderSql {
    * @param {any} entity target entity of the queries
    * @param {any} context DbContext where the entity is stored
    *
-   * @memberOf ProviderSql
+   * @memberOf QueryBuilder
    */
   exec(expression, entity, context) {
     if (expression.select) {

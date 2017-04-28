@@ -2,11 +2,11 @@ import { parse } from 'babylon';
 import { getMetaEntities } from 'walas-meta-api';
 import { check } from './check';
 export class VisitorBase {
-  constructor(expression, entity, context, provider) {
+  constructor(expression, entity, context, queryBuilder) {
     this._ast = parse(expression);
     this._entity = entity;
     this._metaEntities = getMetaEntities(context.constructor);
-    this._provider = provider;
+    this._queryBuilder = queryBuilder;
     this._arrowFuncId = null;
   }
   File(node) {
@@ -40,16 +40,16 @@ export class VisitorBase {
    * @memberOf VisitorBase
    */
   _buildJoin(node, nextEntities) {
-    let prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
-    let joins = this._getAllJoins(this._provider.grammar.join);
+    let prefix = this._queryBuilder.getPrefix(nextEntities, this._metaEntities);
+    let joins = this._getAllJoins(this._queryBuilder.grammar.join);
     if (joins[prefix]) return;
 
     let entities = node.entities;
     let parent = entities[entities.length - 1];
     let property = node.type !== 'Identifier' ? node.key.name : node.name;
-    let parentPrefix = this._provider.getPrefix(entities, this._metaEntities);
+    let parentPrefix = this._queryBuilder.getPrefix(entities, this._metaEntities);
     let joinObj = this._getJoinObject(parent, property, prefix);
-    let target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
+    let target = joins[parentPrefix] ? joins[parentPrefix] : this._queryBuilder.grammar.join;
     target.push(joinObj);
   }
   /**
@@ -75,6 +75,7 @@ export class VisitorBase {
    * @memberOf VisitorBase
    */
   _getJoinObject(parent, property, prefix) {
+    // TODO: ADD PROVIDER
     let prop = this._metaEntities.filter(c =>
       c.entity.name === parent.name)[0]
       .meta.properties[property];

@@ -1,13 +1,13 @@
-import { ProviderSql } from './providersql';
+import { QueryBuilder } from './querybuilder';
 export class Queryable {
   constructor(entity, context) {
     this._entity = entity;
     this._context = context;
     this._expression = { order: [] };
-    this._provider = new ProviderSql();
+    this._queryBuilder = new QueryBuilder();
   }
-  get provider() {
-    return this._provider;
+  get queryBuilder() {
+    return this._queryBuilder;
   }
   get expression() {
     return this._expression;
@@ -40,7 +40,7 @@ export class Queryable {
     this.expression.order.push({ expression: expression, type: type });
   }
   exec() {
-    this.provider.exec(this._expression, this._entity, this._context);
+    this.queryBuilder.exec(this._expression, this._entity, this._context);
   }
 
 }
