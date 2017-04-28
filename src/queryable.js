@@ -13,11 +13,11 @@ export class Queryable {
     return this._expression;
   }
   select(projection) {
-    this._expression.select = projection;
+    this._expression.select = projection.expression;
     return this;
   }
   where(predicate) {
-    this._expression.where = predicate;
+    this._expression.where = predicate.expression;
     return this;
   }
   orderBy(selector) {

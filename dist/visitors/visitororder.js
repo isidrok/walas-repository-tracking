@@ -98,9 +98,9 @@ var VisitorOrder = exports.VisitorOrder = function (_VisitorBase) {
          * so we build a join expression.
          */
         var property = node.name;
-        var propertyEntities = node.parent.entities.concat(this.getEntity(node.parent.entities, property));
+        var propertyEntities = node.parent.entities.concat(this._getEntity(node.parent.entities, property));
         this._provider.addToMapping(propertyEntities, this._metaEntities);
-        this.buildJoin(node, propertyEntities);
+        this._buildJoin(node, propertyEntities);
         node.entities = propertyEntities;
       }
     }

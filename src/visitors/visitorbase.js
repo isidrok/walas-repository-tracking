@@ -39,7 +39,7 @@ export class VisitorBase {
    * @param {any} nextEntities
    * @memberOf VisitorBase
    */
-  buildJoin(node, nextEntities) {
+  _buildJoin(node, nextEntities) {
     let prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
     let joins = this._getAllJoins(this._provider.grammar.join);
     if (joins[prefix]) return;
@@ -48,7 +48,7 @@ export class VisitorBase {
     let parent = entities[entities.length - 1];
     let property = node.type !== 'Identifier' ? node.key.name : node.name;
     let parentPrefix = this._provider.getPrefix(entities, this._metaEntities);
-    let joinObj = this._getjoinObject(parent, property, prefix);
+    let joinObj = this._getJoinObject(parent, property, prefix);
     let target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
     target.push(joinObj);
   }
@@ -74,7 +74,7 @@ export class VisitorBase {
    * previously.
    * @memberOf VisitorBase
    */
-  _getjoinObject(parent, property, prefix) {
+  _getJoinObject(parent, property, prefix) {
     let prop = this._metaEntities.filter(c =>
       c.entity.name === parent.name)[0]
       .meta.properties[property];
@@ -103,7 +103,9 @@ export class VisitorBase {
    * belongs to.
    * @memberOf VisitorBase
    */
-  getEntity(entities, property) {
+  _getEntity(entities, property) {
+    // since we don't have the complete node, build a fake one
+    // for checking if the property is in its parent metadata.
     let node = { entities: entities, name: property };
     check.isInParentMeta(node, this._metaEntities);
     let parent = entities[entities.length - 1];

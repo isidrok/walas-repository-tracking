@@ -136,9 +136,9 @@ export class VisitorWhere extends VisitorBase {
     if (node.noJoin) return;
     let property = node.name;
     let propertyEntities = node.parent.entities
-      .concat(this.getEntity(node.parent.entities, property));
+      .concat(this._getEntity(node.parent.entities, property));
     this._provider.addToMapping(propertyEntities, this._metaEntities);
-    this.buildJoin(node, propertyEntities);
+    this._buildJoin(node, propertyEntities);
     node.entities = propertyEntities;
   }
 }

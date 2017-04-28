@@ -70,8 +70,8 @@ var VisitorBase = exports.VisitorBase = function () {
      */
 
   }, {
-    key: 'buildJoin',
-    value: function buildJoin(node, nextEntities) {
+    key: '_buildJoin',
+    value: function _buildJoin(node, nextEntities) {
       var prefix = this._provider.getPrefix(nextEntities, this._metaEntities);
       var joins = this._getAllJoins(this._provider.grammar.join);
       if (joins[prefix]) return;
@@ -80,7 +80,7 @@ var VisitorBase = exports.VisitorBase = function () {
       var parent = entities[entities.length - 1];
       var property = node.type !== 'Identifier' ? node.key.name : node.name;
       var parentPrefix = this._provider.getPrefix(entities, this._metaEntities);
-      var joinObj = this._getjoinObject(parent, property, prefix);
+      var joinObj = this._getJoinObject(parent, property, prefix);
       var target = joins[parentPrefix] ? joins[parentPrefix] : this._provider.grammar.join;
       target.push(joinObj);
     }
@@ -108,8 +108,8 @@ var VisitorBase = exports.VisitorBase = function () {
      */
 
   }, {
-    key: '_getjoinObject',
-    value: function _getjoinObject(parent, property, prefix) {
+    key: '_getJoinObject',
+    value: function _getJoinObject(parent, property, prefix) {
       var prop = this._metaEntities.filter(function (c) {
         return c.entity.name === parent.name;
       })[0].meta.properties[property];
@@ -140,8 +140,10 @@ var VisitorBase = exports.VisitorBase = function () {
      */
 
   }, {
-    key: 'getEntity',
-    value: function getEntity(entities, property) {
+    key: '_getEntity',
+    value: function _getEntity(entities, property) {
+      // since we don't have the complete node, build a fake one
+      // for checking if the property is in its parent metadata.
       var node = { entities: entities, name: property };
       _check.check.isInParentMeta(node, this._metaEntities);
       var parent = entities[entities.length - 1];

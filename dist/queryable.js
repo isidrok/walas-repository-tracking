@@ -24,13 +24,13 @@ var Queryable = exports.Queryable = function () {
   _createClass(Queryable, [{
     key: 'select',
     value: function select(projection) {
-      this._expression.select = projection;
+      this._expression.select = projection.expression;
       return this;
     }
   }, {
     key: 'where',
     value: function where(predicate) {
-      this._expression.where = predicate;
+      this._expression.where = predicate.expression;
       return this;
     }
   }, {

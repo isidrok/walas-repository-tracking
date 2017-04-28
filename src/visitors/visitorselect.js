@@ -116,10 +116,10 @@ export class VisitorSelect extends VisitorBase {
        */
       let property = node.key.name;
       let propertyEntities = node.entities
-        .concat(this.getEntity(node.entities, property));
+        .concat(this._getEntity(node.entities, property));
       this._provider.addToMapping(propertyEntities, this._metaEntities);
       node.value.entities = propertyEntities;
-      this.buildJoin(node, propertyEntities);
+      this._buildJoin(node, propertyEntities);
     }
     this.visit(node.value);
   }

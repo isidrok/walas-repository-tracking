@@ -13,15 +13,15 @@ context.Foo.add(foo);
 context.Bar.add(bar);
 context.Baz.add(baz1);
 context.Baz.add(baz2);
-
+let id = 24;
 context.Foo
 // .select('(c=>({id,description,bar:{bazs:{id},description},bazs:{id}}))')
-// .select('(c=>({id,bad2343azs:{id}}))')
-  .where('(c=>c.id === p0 || p1 === c.bar.id)')
+.select(c=>({id, bar: {id}}))
+  .where(c=> c.id === 10 || c.bar.id === id)
   // .where('(c => (c.description === p0 || c.bar.id === p1 || c.id === p2) && c.bar.bazs.description === p3 || c.bazs.description === p4)')
   // .where('(c => c.id === p0 && c.bar.id === p1 || c.bazs.description === p2)')
-  // .orderBy('(c=>c.id)')
-  // .thenByDescending('(c=>c.bar.description)')
+  .orderBy(c=>c.id)
+  .thenByDescending(c=>c.bar.description)
   // .thenBy('(c=>c.bar.bazs.description)')
   .exec();
 
