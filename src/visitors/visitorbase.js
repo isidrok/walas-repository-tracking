@@ -86,6 +86,7 @@ export class VisitorBase {
     return {
       table: entity.table,
       prefix: prefix,
+      provider: entity.provider,
       relation: prop.hasOne ? 'hasOne' : 'hasMany',
       required: prop.required,
       on: ['id', 'id'],
