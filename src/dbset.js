@@ -20,5 +20,4 @@ export class DbSet extends Queryable {
   findById(id) {
     // TODO: specify everything this method needs to do
   }
-
 }

@@ -110,6 +110,8 @@ export class VisitorBase {
     let node = { entities: entities, name: property };
     check.isInParentMeta(node, this._metaEntities);
     let parent = entities[entities.length - 1];
+    // TODO: check if the parent is exposed as includes
+    // in the main entity
     let parentMeta = this._metaEntities.filter(c =>
       c.entity.name === parent.name)[0].meta;
     let propMeta = parentMeta.properties[property];

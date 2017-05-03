@@ -3,7 +3,8 @@
     "es2015"
   ],
   "plugins": [
-    "transform-decorators-legacy",
-    "linq"
+    "linq",
+    "transform-decorators-legacy"
+    
   ]
 }

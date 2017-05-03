@@ -88,6 +88,15 @@ export class QueryBuilder {
    * @memberOf QueryBuilder
    */
   exec(expression, entity, context) {
+    /*
+     * TODO: if select is of the form:
+     *  select(c => {c}) or select(c => {bar})
+     * or if there is no select, add all
+     * properties of c (main entity) or bar
+     * to the select expression, add all the
+     * properties of the entities that are in
+     * the include of the main entity aswell.
+     */
     if (expression.select) {
       let select = new VisitorSelect(expression.select, entity, context, this);
       select.exec();

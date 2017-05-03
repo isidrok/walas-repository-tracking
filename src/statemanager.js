@@ -1,3 +1,4 @@
+//TODO change entity to instance
 import { STATES } from './states';
 export class StateManager {
   constructor() {

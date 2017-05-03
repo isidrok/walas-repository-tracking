@@ -36,11 +36,22 @@ export class Queryable {
     this._order(selector, 'desc');
     return this;
   }
-  _order(expression, type) {
-    this.expression.order.push({ expression: expression, type: type });
+  /*
+  * TODO:
+  * var items = [1,2,3];
+  * items.skip(1).take(1) = [2]
+  */
+  skip(value) {
+
+  }
+  take(value) {
+
   }
   exec() {
     this.queryBuilder.exec(this._expression, this._entity, this._context);
+  }
+  _order(expression, type) {
+    this.expression.order.push({ expression: expression, type: type });
   }
 
 }
